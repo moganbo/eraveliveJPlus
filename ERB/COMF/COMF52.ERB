@@ -1,0 +1,46 @@
+﻿@COM52
+;利尿剤
+
+PRINTL 利尿剤
+STR:0 = 利尿剤
+CALL TRAIN_MESSAGE_B
+
+;調合知識があれば消費を抑える
+D = 0
+IF TALENT:MASTER:調合知識
+	D = 1
+ELSEIF ASSI >= 0
+	SIF TALENT:ASSI:調合知識
+		D = 1
+ENDIF
+
+IF D
+	LOSEBASE:体力 += 50
+	LOSEBASE:気力 += 50
+ELSE
+	LOSEBASE:体力 += 120
+	LOSEBASE:気力 += 120
+ENDIF
+
+SOURCE:逸脱 = 2000
+;利尿剤効果で軽く変動
+SOURCE:反感追加 = 150
+
+SIF TEQUIP:90 == 0
+	ITEM:利尿剤 -= 1
+
+TEQUIP:22 = 1
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+	EXP:PLAYER:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+	EXP:PLAYER:ＢＬ経験 += 1
+ENDIF
+
+RETURN 1

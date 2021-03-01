@@ -1,0 +1,386 @@
+﻿@COM_ABLE155
+;巨峰責め
+RETURN 0
+
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;ウフフ中じゃないと無理
+SIF TFLAG:44 == 0
+	RETURN 0
+;調教者が秋姉妹でないとダメ
+SIF 1
+	RETURN 0
+;触手調教中はダメ
+SIF TEQUIP:90
+	RETURN 0
+;解除はいつでも可能
+SIF TEQUIP:70
+	RETURN 1
+;体力が1000未満では装着不可能
+SIF BASE:体力 < 1000 && TEQUIP:70 == 0
+	RETURN 0
+;気力が０の時はダメ
+SIF BASE:気力 == 0
+	RETURN 0
+;Ａ拡張経験少ないとダメ
+SIF EXP:Ａ拡張経験 < 5
+	RETURN 0
+;アナルバイブ使用中は不可
+SIF TEQUIP:13
+	RETURN 0
+;アナルビーズ使用中は不可
+SIF TEQUIP:19
+	RETURN 0
+;普通の浣腸使用中は不可
+SIF TEQUIP:46
+	RETURN 0
+;空気浣腸使用中は不可
+SIF TEQUIP:47
+	RETURN 0
+;バルーン使用中は不可
+SIF TEQUIP:48
+	RETURN 0
+;電極使用中は不可
+SIF TEQUIP:49
+	RETURN 0
+;氷柱挿入中は不可
+SIF TEQUIP:79
+	RETURN 0
+;調教対象が小人体型の場合は主人が禁断の知識持ちじゃないとダメ
+SIF TALENT:小人体型 && TALENT:MASTER:禁断の知識 == 0
+	RETURN 0
+RETURN 1
+
+@COM155
+;巨峰責め
+;Ａ拡張経験がついた強化アナルビーズみたいなもの。
+
+PRINTL 巨峰責め
+STR:0 = 巨峰責め
+
+LOSEBASE:体力 += 300
+LOSEBASE:気力 += 400
+
+SOURCE:逸脱 = 2000
+
+;ABL:Ａ感覚をみる
+IF ABL:Ａ感覚 == 0
+	SOURCE:快Ａ = 100
+	SOURCE:屈従 = 300
+ELSEIF ABL:Ａ感覚 == 1
+	SOURCE:快Ａ = 300
+	SOURCE:屈従 = 800
+ELSEIF ABL:Ａ感覚 == 2
+	SOURCE:快Ａ = 600
+	SOURCE:屈従 = 1400
+ELSEIF ABL:Ａ感覚 == 3
+	SOURCE:快Ａ = 1000
+	SOURCE:屈従 = 1800
+ELSEIF ABL:Ａ感覚 == 4
+	SOURCE:快Ａ = 1500
+	SOURCE:屈従 = 2100
+ELSE
+	SOURCE:快Ａ = 2100
+	SOURCE:屈従 = 2400
+ENDIF
+
+;EXP:Ａ経験をみる
+IF EXP:Ａ経験 < EXPLV:1
+	TIMES SOURCE:快Ａ , 0.50
+	SOURCE:痛み = 2000
+ELSEIF EXP:Ａ経験 < EXPLV:2
+	TIMES SOURCE:快Ａ , 1.00
+	SOURCE:痛み = 300
+ELSEIF EXP:Ａ経験 < EXPLV:3
+	TIMES SOURCE:快Ａ , 1.10
+	SOURCE:痛み = 50
+ELSEIF EXP:Ａ経験 < EXPLV:4
+	TIMES SOURCE:快Ａ , 1.20
+	SOURCE:痛み = 10
+ELSEIF EXP:Ａ経験 < EXPLV:5
+	TIMES SOURCE:快Ａ , 1.40
+	SOURCE:痛み = 0
+ELSE
+	TIMES SOURCE:快Ａ , 1.60
+	SOURCE:痛み = 0
+ENDIF
+
+;PALAM:潤滑をみる
+IF PALAM:潤滑 < PALAMLV:1
+	TIMES SOURCE:快Ａ , 0.40
+	SOURCE:痛み += 1200
+ELSEIF PALAM:潤滑 < PALAMLV:2
+	TIMES SOURCE:快Ａ , 0.80
+	SOURCE:痛み += 700
+ELSEIF PALAM:潤滑 < PALAMLV:3
+	TIMES SOURCE:快Ａ , 1.00
+	SOURCE:痛み += 400
+ELSEIF PALAM:潤滑 < PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.40
+	SOURCE:痛み += 150
+ELSEIF PALAM:潤滑 >= PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.80
+	SOURCE:痛み += 100
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES SOURCE:快Ａ , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES SOURCE:快Ａ , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES SOURCE:快Ａ , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.20
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES SOURCE:快Ａ , 0.80
+ELSEIF ABL:親密 == 1
+	TIMES SOURCE:快Ａ , 0.90
+ELSEIF ABL:親密 == 2
+	TIMES SOURCE:快Ａ , 1.00
+ELSEIF ABL:親密 == 3
+	TIMES SOURCE:快Ａ , 1.10
+ELSEIF ABL:親密 == 4
+	TIMES SOURCE:快Ａ , 1.20
+ELSE
+	TIMES SOURCE:快Ａ , 1.30
+ENDIF
+
+;小柄体型
+IF TALENT:小柄体型
+	TIMES SOURCE:痛み , 2.00
+SIF TALENT:幼稚 || TALENT:幼児
+	TIMES SOURCE:快Ａ , 2.00
+ENDIF
+
+;Ａ敏感、鈍感をみる
+;快Ａ自体のチェックは後でまとめてやる
+IF TALENT:Ａ鈍感
+	TIMES SOURCE:痛み , 1.50
+	TIMES SOURCE:屈従 , 1.50
+	TIMES SOURCE:逸脱 , 1.50
+ELSEIF TALENT:Ａ敏感
+	TIMES SOURCE:痛み , 0.60
+	TIMES SOURCE:屈従 , 0.60
+	TIMES SOURCE:逸脱 , 0.60
+ENDIF
+
+IF EXP:Ｖ経験 == 0 && TALENT:貞操観念
+	SOURCE:屈従 /= 3
+ENDIF
+
+SIF TEQUIP:71 == 1
+	TIMES SOURCE:快Ａ , 1.80
+
+IF TEQUIP:70 == 0
+	EXP:Ａ経験 += 2
+	EXP:Ａ拡張経験 += 3
+	PRINTL Ａ経験＋２
+	PRINTL Ａ拡張経験＋３
+ELSEIF TEQUIP:70 == 1
+	EXP:Ａ経験 += 3
+	EXP:Ａ拡張経験 += 4
+	PRINTL Ａ経験＋３
+	PRINTL Ａ拡張経験＋４
+ENDIF
+
+CALL TRAIN_MESSAGE_B
+
+;巨峰の着脱
+IF TEQUIP:70
+	TEQUIP:70 = 0
+	TFLAG:74 += 5
+ELSE
+	TEQUIP:70 = 1
+	TFLAG:74 += 10
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM155
+;巨峰の着脱
+IF TEQUIP:70
+	PRINTFORML %CALLNAME:PLAYER%は%CALLNAME:TARGET%の菊穴から生えている蔓をつまむと勢い良く引き抜いた…
+	IF ABL:Ａ感覚 >= 5 && TALENT:淫乱
+		PRINTFORML 一時は幸せそうな顔をしていた%CALLNAME:TARGET%だったが、次第に直腸の喪失感が増してきたのか
+		PRINTFORM 涙と涎をこぼし、腰を振って自らの手で肛門を拡げながら哀願するような目で%CALLNAME:PLAYER%を見上げて
+	ELSEIF ABL:Ａ感覚 >= 3 && EXP:Ａ経験 < 5 && TALENT:淫乱
+		PRINTFORM 葡萄の実が肛門から排泄されるとその度に%CALLNAME:TARGET%はぶるっと腰を震わせ
+	ELSEIF ABL:Ａ感覚 >= 1 && EXP:Ａ経験 < 3 && TALENT:淫乱
+		PRINTFORM 大きく拡がった%CALLNAME:TARGET%の肛門から腸内に溜まっていたであろう粘液が滴り出し
+	ELSEIF ABL:Ａ感覚 == 0 && TALENT:淫乱
+		PRINTFORM %CALLNAME:TARGET%は痛そうに顔を歪ませながらも陰唇からは愛液を滲ませ
+	ELSEIF ABL:Ａ感覚 >= 4
+		PRINTFORM %CALLNAME:TARGET%は恍惚感を浮かべた目付きで%CALLNAME:PLAYER%の方を振り返っ
+	ELSEIF ABL:Ａ感覚 >= 2 && EXP:Ａ経験 < 4
+		PRINTFORM %CALLNAME:TARGET%は荒い息をつきながら涙を流し
+	ELSEIF ABL:Ａ感覚 <= 1
+		PRINTFORM %CALLNAME:TARGET%は挿入された時以上の大きな叫び声を上げ
+	ENDIF
+	PRINTW ている…
+ELSE
+	PRINTFORM %CALLNAME:PLAYER%は%CALLNAME:TARGET%の
+	SIF PALAM:潤滑 >= PALAMLV:5
+		PRINT たっぷりと
+	SIF PALAM:潤滑 >= PALAMLV:3
+		PRINT 粘液をたたえた
+	SIF PALAM:潤滑 < PALAMLV:3
+		PRINT 硬く閉ざされた
+	IF TALENT:小柄体型
+		PRINT 可愛らしい菊門を
+	ELSE
+		PRINT アヌスを
+	ENDIF
+	PRINTL 無理やり拡げ、大粒の葡萄の実ををひとつづつ捻じ込んでいった…
+	PRINTFORM %CALLNAME:PLAYER%
+	IF EXP:Ａ経験 >= 201 && TALENT:恋慕
+		PRINT は１粒挿入されただけでガクガクと腰を震わせてイきそうな気配を漂わせて
+	ELSEIF EXP:Ａ経験 >= 101 && EXP:Ａ経験 <= 200 && TALENT:恋慕
+		PRINT の肛門はまるで食べ盛りの子供みたく、貪欲に葡萄を飲み込んで
+	ELSEIF EXP:Ａ経験 >= 51 && EXP:Ａ経験 <= 100 && TALENT:恋慕
+		PRINT は葡萄の実が腸内を転がっていく感触を楽しむため腰を高々と上げて
+	ELSEIF EXP:Ａ経験 >= 1 && EXP:Ａ経験 <= 50 && TALENT:恋慕
+		PRINT は苦痛に顔をしかめていたが実を飲み込むごとに快楽を感じ始めたのか徐々に頬を緩ませて
+	ELSEIF EXP:Ａ経験 >= 201
+		PRINT は直腸に巨大な質量をもつ何かが転がり込むたびに恍惚とした表情を浮かべて
+	ELSEIF EXP:Ａ経験 >= 101 && EXP:Ａ経験 <= 200
+		PRINT は実が腸壁に擦れる感触を楽しんでいるかのように腰を振って
+	ELSEIF EXP:Ａ経験 >= 1 && EXP:Ａ経験 <= 100
+		PRINT は苦痛に顔を歪ませながらも肛門から頭頂まで駆け抜けるような快楽に一瞬弛んだ表情を見せて
+	ENDIF
+	PRINTW いる…
+ENDIF
+
+@EQUIP_COM155
+;巨峰
+
+PRINTL ＜巨峰挿入中＞
+
+LOSEBASE:体力 += 70
+LOSEBASE:気力 += 120
+
+;ABL:Ａ感覚をみる
+IF ABL:Ａ感覚 == 0
+	A = 40
+	B = 100
+ELSEIF ABL:Ａ感覚 == 1
+	A = 80
+	B = 300
+ELSEIF ABL:Ａ感覚 == 2
+	A = 100
+	B = 500
+ELSEIF ABL:Ａ感覚 == 3
+	A = 150
+	B = 700
+ELSEIF ABL:Ａ感覚 == 4
+	A = 200
+	B = 900
+ELSE
+	A = 300
+	B = 1200
+ENDIF
+
+;EXP:Ａ経験をみる
+IF EXP:Ａ経験 < EXPLV:1
+	TIMES A , 0.50
+	C = 3000
+ELSEIF EXP:Ａ経験 < EXPLV:2
+	TIMES A , 1.00
+	C = 1000
+ELSEIF EXP:Ａ経験 < EXPLV:3
+	TIMES A , 1.10
+	C = 500
+ELSEIF EXP:Ａ経験 < EXPLV:4
+	TIMES A , 1.20
+	C = 100
+ELSEIF EXP:Ａ経験 < EXPLV:5
+	TIMES A , 1.40
+	C = 50
+ELSE
+	TIMES A , 1.60
+	C = 0
+ENDIF
+
+;PALAM:潤滑をみる
+IF PALAM:潤滑 < PALAMLV:1
+	TIMES A , 0.40
+	C += 900
+ELSEIF PALAM:潤滑 < PALAMLV:2
+	TIMES A , 0.80
+	C += 600
+ELSEIF PALAM:潤滑 < PALAMLV:3
+	TIMES A , 1.00
+	C += 300
+ELSEIF PALAM:潤滑 < PALAMLV:4
+	TIMES A , 1.40
+	C += 150
+ELSEIF PALAM:潤滑 >= PALAMLV:4
+	TIMES A , 1.80
+	C += 100
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES A , 0.80
+ELSEIF ABL:親密 == 1
+	TIMES A , 0.90
+ELSEIF ABL:親密 == 2
+	TIMES A , 1.00
+ELSEIF ABL:親密 == 3
+	TIMES A , 1.10
+ELSEIF ABL:親密 == 4
+	TIMES A , 1.20
+ELSE
+	TIMES A , 1.30
+ENDIF
+
+;小柄体型
+SIF TALENT:小柄体型
+	TIMES C , 1.50
+
+SOURCE:快Ａ += A
+SOURCE:屈従 += B
+SOURCE:痛み += C
+
+;処女で貞操観念
+IF EXP:Ｖ経験 == 0 && TALENT:貞操観念
+	SOURCE:屈従 /= 3
+ENDIF
+
+EXP:Ａ経験 += 2
+EXP:Ａ拡張経験 += 2
+PRINTL Ａ経験＋２
+PRINTL Ａ拡張経験＋２
+
+TFLAG:74 += 1
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+ENDIF
+
+RETURN 1

@@ -1,0 +1,174 @@
+﻿;_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+;_/
+;_/M感覚upの処理
+;_/
+;_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+
+;-------------------------------------------------
+;M感覚up本体
+;-------------------------------------------------
+@ABLUP17MAIN
+DRAWLINE
+IF ABL:Ｍ感覚 >= 9999
+	PRINTW 既にMAXです。
+	RETURN 0
+ENDIF
+
+;能力アップ可能かを取得
+;その際に能力アップに必要なコストを計算
+CALL ISABLUP17
+
+PRINTFORM [0] - %PALAMNAME:18%の珠×{A}……
+IF I == 0
+	PRINT ＯＫ
+ELSE
+	SIF I & 1
+		PRINT 珠不足 
+	SIF I & 2
+		PRINT 経験不足 
+ENDIF
+PRINTL 
+
+PRINTFORM [20] - %PALAMNAME:18%の珠で限界まであげる……
+IF I == 0
+	PRINT ＯＫ
+ELSE
+	SIF I & 1
+		PRINT 珠不足 
+	SIF I & 2
+		PRINT 経験不足 
+ENDIF
+PRINTL 
+
+
+PRINTL [100] - やめる
+
+
+INPUT
+IF (RESULT < 0 || RESULT > 0) && RESULT != 100 && RESULT != 20
+	RESTART
+ELSEIF I != 0 && RESULT == 0
+	PRINTL 条件を満たしていません。
+	RESTART
+ELSEIF I != 0 && RESULT == 20
+	PRINTL 条件を満たしていません。
+	RESTART
+ELSEIF RESULT == 100
+	RETURN 0
+ENDIF
+
+SIF RESULT < 20
+	ABL:Ｍ感覚 += 1
+
+IF RESULT == 0
+	JUEL:快Ｍ -= A
+ELSEIF RESULT == 20
+	CALL AUT_M_0
+ENDIF
+
+PRINTFORMW %ABLNAME:17%のレベルが{ABL:Ｍ感覚}になりました。
+
+
+
+;-------------------------------------------------
+;M感覚が上げられるかチェック
+;-------------------------------------------------
+@ISABLUP17
+IF ABL:Ｍ感覚 >= 9999
+	CALL ISABLUP_LIMIT
+	RETURN 0
+ENDIF
+
+;能力アップに必要なコストを計算
+CALL COSTABLUP17
+
+;条件別にＯＫかダメかを記録する
+I = 0
+;能力アップ可能なら1にする
+Z = 0
+
+;快Ｍの珠で上げる
+SIF JUEL:快Ｍ < A
+	I |= 1
+
+IF I == 0
+	Z = 1
+ENDIF
+
+IF Z == 0
+	RETURN 0
+ELSE
+	RETURN 1
+ENDIF
+
+;-------------------------------------------------
+;M感覚を上げるのに必要なコストを計算
+;-------------------------------------------------
+@COSTABLUP17
+IF ABL:Ｍ感覚 == 0
+	A = 5
+ELSEIF ABL:Ｍ感覚 == 1
+	A = 50
+ELSEIF ABL:Ｍ感覚 == 2
+	A = 600
+ELSEIF ABL:Ｍ感覚 == 3
+	A = 7000
+	;一線越えない
+	IF TALENT:一線越えない
+		TIMES A , 1.10
+	ENDIF
+ELSEIF ABL:Ｍ感覚 == 4
+	A = 45000
+	;一線越えない
+	IF TALENT:一線越えない
+		TIMES A , 1.30
+	ENDIF
+ELSE
+	A = 45000
+	
+	A = A * (ABL:Ｍ感覚 - 3)
+	;一線越えない
+	IF TALENT:一線越えない
+		TIMES A , 1.30
+	ENDIF
+ENDIF
+
+;M鈍感
+IF TALENT:Ｍ鈍感
+	TIMES A , 1.20
+ENDIF
+
+;M敏感
+IF TALENT:Ｍ敏感
+	TIMES A , 0.80
+ENDIF
+
+;淫乱化
+IF TALENT:淫乱
+	TIMES A , 0.80
+ENDIF
+
+;舌使い
+IF TALENT:舌使い
+	TIMES A , 0.80
+ENDIF
+
+;猫舌
+IF TALENT:猫舌
+	TIMES A , 1.10
+ENDIF
+
+;献身的
+IF TALENT:献身的
+	TIMES A , 0.90
+ENDIF
+
+;キス魔
+IF TALENT:キス魔
+	TIMES A , 0.80
+ENDIF
+
+;蕩唇
+IF TALENT:蕩唇
+	TIMES A , 0.80
+ENDIF

@@ -1,0 +1,418 @@
+﻿@COM110
+;クスコ
+PRINTL クスコ
+STR:0 = クスコ
+
+LOSEBASE:体力 += 50
+LOSEBASE:気力 += 100
+
+;ABL:Ｖ感覚をみる
+IF ABL:Ｖ感覚 == 0
+	SOURCE:快Ｖ = 40
+ELSEIF ABL:Ｖ感覚 == 1
+	SOURCE:快Ｖ = 130
+ELSEIF ABL:Ｖ感覚 == 2
+	SOURCE:快Ｖ = 300
+ELSEIF ABL:Ｖ感覚 == 3
+	SOURCE:快Ｖ = 500
+ELSEIF ABL:Ｖ感覚 == 4
+	SOURCE:快Ｖ = 800
+ELSE
+	SOURCE:快Ｖ = 1200
+ENDIF
+
+;ABL:露出癖をみる
+IF ABL:露出癖 == 0
+	SOURCE:中毒充足 += 0
+	SOURCE:液体追加 += 0
+	SOURCE:露出 += 300
+	SOURCE:屈従 += 600
+	SOURCE:逸脱 += 800
+ELSEIF ABL:露出癖 == 1
+	SOURCE:中毒充足 += 150
+	SOURCE:液体追加 += 150
+	SOURCE:露出 += 500
+	SOURCE:屈従 += 500
+	SOURCE:逸脱 += 200
+ELSEIF ABL:露出癖 == 2
+	SOURCE:中毒充足 += 300
+	SOURCE:液体追加 += 800
+	SOURCE:露出 += 500
+	SOURCE:屈従 += 400
+ELSEIF ABL:露出癖 == 3
+	SOURCE:中毒充足 += 600
+	SOURCE:液体追加 += 600
+	SOURCE:露出 += 500
+	SOURCE:屈従 += 300
+ELSEIF ABL:露出癖 == 4
+	SOURCE:中毒充足 += 1000
+	SOURCE:液体追加 += 1000
+	SOURCE:露出 += 1000
+	SOURCE:屈従 += 200
+ELSE
+	SOURCE:中毒充足 += 1800
+	SOURCE:液体追加 += 1800
+	SOURCE:露出 += 1300
+	SOURCE:屈従 += 100
+ENDIF
+
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	TIMES SOURCE:露出 , 0.80
+ELSEIF ABL:マゾっ気 == 1
+	TIMES SOURCE:露出 , 1.10
+ELSEIF ABL:マゾっ気 == 2
+	TIMES SOURCE:露出 , 1.30
+ELSEIF ABL:マゾっ気 == 3
+	TIMES SOURCE:露出 , 1.50
+ELSEIF ABL:マゾっ気 == 4
+	TIMES SOURCE:露出 , 1.70
+ELSE
+	TIMES SOURCE:露出 , 2.10
+ENDIF
+
+;EXP:Ｖ経験をみる
+IF EXP:Ｖ経験 < EXPLV:1
+	TIMES SOURCE:快Ｖ , 0.20
+	SOURCE:痛み = 6500
+ELSEIF EXP:Ｖ経験 < EXPLV:2
+	TIMES SOURCE:快Ｖ , 0.60
+	SOURCE:痛み = 2000
+ELSEIF EXP:Ｖ経験 < EXPLV:3
+	TIMES SOURCE:快Ｖ , 1.00
+	SOURCE:痛み = 500
+ELSEIF EXP:Ｖ経験 < EXPLV:4
+	TIMES SOURCE:快Ｖ , 1.20
+	SOURCE:痛み = 100
+ELSEIF EXP:Ｖ経験 < EXPLV:5
+	TIMES SOURCE:快Ｖ , 1.40
+	SOURCE:痛み = 10
+ELSE
+	TIMES SOURCE:快Ｖ , 1.60
+	SOURCE:痛み = 0
+ENDIF
+
+;PALAM:潤滑をみる
+IF PALAM:潤滑 < PALAMLV:1
+	TIMES SOURCE:快Ｖ , 0.10
+	SOURCE:痛み += 1000
+	TIMES SOURCE:痛み , 4.00
+ELSEIF PALAM:潤滑 < PALAMLV:2
+	TIMES SOURCE:快Ｖ , 0.40
+	SOURCE:痛み += 400
+	TIMES SOURCE:痛み , 1.00
+ELSEIF PALAM:潤滑 < PALAMLV:3
+	TIMES SOURCE:快Ｖ , 1.00
+	TIMES SOURCE:痛み , 0.50
+ELSEIF PALAM:潤滑 < PALAMLV:4
+	TIMES SOURCE:快Ｖ , 1.20
+	TIMES SOURCE:痛み , 0.20
+ELSEIF PALAM:潤滑 >= PALAMLV:4
+	TIMES SOURCE:快Ｖ , 1.50
+	TIMES SOURCE:痛み , 0.10
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES SOURCE:快Ｖ , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES SOURCE:快Ｖ , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES SOURCE:快Ｖ , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES SOURCE:快Ｖ , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES SOURCE:快Ｖ , 1.20
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES SOURCE:快Ｖ , 0.80
+ELSEIF ABL:親密 == 1
+	TIMES SOURCE:快Ｖ , 0.90
+ELSEIF ABL:親密 == 2
+	TIMES SOURCE:快Ｖ , 1.00
+ELSEIF ABL:親密 == 3
+	TIMES SOURCE:快Ｖ , 1.10
+ELSEIF ABL:親密 == 4
+	TIMES SOURCE:快Ｖ , 1.20
+ELSE
+	TIMES SOURCE:快Ｖ , 1.30
+ENDIF
+
+;ビデオカメラ
+SIF TEQUIP:53
+	TIMES SOURCE:露出 , 1.20
+;羞恥プレイ
+SIF TEQUIP:57
+	TIMES SOURCE:露出 , 1.20
+;貞操観念
+SIF TALENT:貞操観念
+	TIMES SOURCE:逸脱 , 4.00
+;倒錯的
+SIF TALENT:倒錯的
+	TIMES SOURCE:露出 , 1.50
+	TIMES SOURCE:逸脱 , 1.20
+;小柄体型
+SIF TALENT:小柄体型
+	TIMES SOURCE:痛み , 2.50
+;調合知識、治療、針さばきがあれば痛覚半減
+;調合知識、治療があれば痛覚減
+IF TEQUIP:90 == 0
+	IF TALENT:PLAYER:調合知識 && TALENT:PLAYER:治療 && TALENT:PLAYER:針さばき
+		TIMES SOURCE:痛み , 0.50
+	ELSEIF TALENT:PLAYER:調合知識 && TALENT:PLAYER:治療
+		TIMES SOURCE:痛み , 0.70
+	ENDIF
+ENDIF
+EXP:Ｖ経験 += 3
+PRINTL Ｖ経験＋３
+
+;既成事実２に相当
+TFLAG:200 = 2
+
+CALL TRAIN_MESSAGE_B
+
+;クスコの着脱
+IF TEQUIP:61
+	TEQUIP:61 = 0
+ELSE
+	TEQUIP:61 = 1
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM110
+;クスコの着脱
+IF TEQUIP:61
+	PRINTFORML %CALLNAME:TARGET%の膣からクスコを引き抜いた…
+	IF EXP:Ｖ経験 >= 200 && TALENT:恋慕
+		PRINTFORM %CALLNAME:TARGET%は広がったまま大量の粘液を溢れさせる秘裂を、恍惚とした表情で見つめ
+	ELSEIF EXP:Ｖ経験 >= 71 && EXP:Ｖ経験 <= 200 && TALENT:恋慕
+		PRINTFORM %CALLNAME:TARGET%の膣孔は中々元に戻らずに、愛液を垂れ流し
+	ELSEIF EXP:Ｖ経験 >= 21
+		PRINTFORM %CALLNAME:TARGET%は顔を紅潮させ、未だに残る異物感に震え
+	ELSEIF EXP:Ｖ経験 <= 20
+		PRINTFORM %CALLNAME:TARGET%は羞恥と圧迫感から開放されて、安堵の表情を浮かべ
+	ENDIF
+	PRINTW ている…
+ELSE
+	SIF TEQUIP:53
+		PRINT ビデオカメラの前で、
+	SIF TEQUIP:57
+		PRINT 鏡に映る膣内を自身に見せつけるように
+	PRINTFORML %CALLNAME:TARGET%の膣にクスコを挿入して割り開いた
+	PRINTFORML 　
+	IF PALAM:潤滑 >= PALAMLV:5
+		PRINTFORMW 広げられた秘肉から大量の白濁した蜜が、とろとろと床に流れ出した…
+	ELSEIF PALAM:潤滑 >= PALAMLV:3 && PALAM:潤滑 < PALAMLV:5
+		PRINTFORMW 秘肉からは粘液が、ねっとりとクスコに垂れ落ちている…
+	ELSE
+		RETURN 1
+	ENDIF
+
+	PRINTFORM %CALLNAME:TARGET%は
+	IF EXP:Ｖ経験 >= 200 && TALENT:恋慕 || TALENT:淫乱
+		PRINTFORM %CALLNAME:PLAYER%の方に腰を突き上げて、しきりにもっと押し広げて欲しいとねだっ
+	ELSEIF EXP:Ｖ経験 >= 71 && EXP:Ｖ経験 <= 200 && TALENT:恋慕
+		PRINTFORM ゆっくりと広げていく%CALLNAME:PLAYER%の手を、涎を垂らしながら見つめ
+	ELSEIF EXP:Ｖ経験 >= 21
+		PRINT 膣内のひんやりとした異物感に何とも言えない表情をし
+	ELSEIF EXP:Ｖ経験 <= 20
+		PRINT 体内から引き裂かれるような感覚に、呻き声を上げ
+	ENDIF
+	PRINTW ている…
+ENDIF
+
+@EQUIP_COM110
+;クスコ挿入中
+
+;V経験を伴うコマンドのフラグ(処女膜再生対応)
+TFLAG:19 = 1
+
+	PRINTL ＜クスコ挿入中＞
+
+LOSEBASE:体力 += 10
+LOSEBASE:気力 += 50
+
+;ABL:Ｖ感覚をみる
+IF ABL:Ｖ感覚 == 0
+	A = 0
+ELSEIF ABL:Ｖ感覚 == 1
+	A = 50
+ELSEIF ABL:Ｖ感覚 == 2
+	A = 100
+ELSEIF ABL:Ｖ感覚 == 3
+	A = 150
+ELSEIF ABL:Ｖ感覚 == 4
+	A = 200
+ELSE
+	A = 300
+ENDIF
+
+;ABL:露出癖をみる
+IF ABL:露出癖 == 0
+	SOURCE:中毒充足 += 0
+	SOURCE:液体追加 += 0
+	SOURCE:露出 += 300
+	SOURCE:屈従 += 600
+	SOURCE:逸脱 += 1000
+ELSEIF ABL:露出癖 == 1
+	SOURCE:中毒充足 += 150
+	SOURCE:液体追加 += 150
+	SOURCE:露出 += 500
+	SOURCE:屈従 += 500
+	SOURCE:逸脱 += 500
+ELSEIF ABL:露出癖 == 2
+	SOURCE:中毒充足 += 300
+	SOURCE:液体追加 += 800
+	SOURCE:露出 += 500
+	SOURCE:屈従 += 400
+ELSEIF ABL:露出癖 == 3
+	SOURCE:中毒充足 += 600
+	SOURCE:液体追加 += 600
+	SOURCE:露出 += 500
+	SOURCE:屈従 += 300
+ELSEIF ABL:露出癖 == 4
+	SOURCE:中毒充足 += 1000
+	SOURCE:液体追加 += 1000
+	SOURCE:露出 += 1000
+	SOURCE:屈従 += 200
+ELSE
+	SOURCE:中毒充足 += 1800
+	SOURCE:液体追加 += 1800
+	SOURCE:露出 += 1300
+	SOURCE:屈従 += 100
+ENDIF
+
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	TIMES SOURCE:露出 , 0.00
+ELSEIF ABL:マゾっ気 == 1
+	TIMES SOURCE:露出 , 1.10
+ELSEIF ABL:マゾっ気 == 2
+	TIMES SOURCE:露出 , 1.30
+ELSEIF ABL:マゾっ気 == 3
+	TIMES SOURCE:露出 , 1.50
+ELSEIF ABL:マゾっ気 == 4
+	TIMES SOURCE:露出 , 1.70
+ELSE
+	TIMES SOURCE:露出 , 2.10
+ENDIF
+
+;EXP:Ｖ経験をみる
+;処女はありえない
+IF EXP:Ｖ経験 < EXPLV:2
+	TIMES A , 0.60
+	B = 150
+ELSEIF EXP:Ｖ経験 < EXPLV:3
+	TIMES A , 1.00
+	B = 20
+ELSEIF EXP:Ｖ経験 < EXPLV:4
+	TIMES A , 1.20
+	B = 0
+ELSEIF EXP:Ｖ経験 < EXPLV:5
+	TIMES A , 1.40
+	B = 0
+ELSE
+	TIMES A , 1.60
+	B = 0
+ENDIF
+
+;PALAM:潤滑をみる
+IF PALAM:潤滑 < PALAMLV:1
+	TIMES A , 0.10
+	B += 400
+	TIMES B , 3.00
+	C += 1000
+ELSEIF PALAM:潤滑 < PALAMLV:2
+	TIMES A , 0.40
+	B += 150
+	TIMES B , 1.00
+	C += 200
+ELSEIF PALAM:潤滑 < PALAMLV:3
+	TIMES A , 1.00
+	TIMES B , 0.50
+	C += 80
+ELSEIF PALAM:潤滑 < PALAMLV:4
+	TIMES A , 1.40
+	TIMES B , 0.20
+ELSEIF PALAM:潤滑 >= PALAMLV:4
+	TIMES A , 1.80
+	TIMES B , 0.10
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES A , 0.80
+ELSEIF ABL:親密 == 1
+	TIMES A , 0.90
+ELSEIF ABL:親密 == 2
+	TIMES A , 1.00
+ELSEIF ABL:親密 == 3
+	TIMES A , 1.10
+ELSEIF ABL:親密 == 4
+	TIMES A , 1.20
+ELSE
+	TIMES A , 1.30
+ENDIF
+
+;プライド高い
+SIF TALENT:プライド高い
+	TIMES SOURCE:逸脱 , 1.20
+
+;無関心
+SIF TALENT:無関心
+	TIMES SOURCE:露出 , 0.80
+	TIMES SOURCE:逸脱 , 0.80
+;倒錯的
+SIF TALENT:倒錯的
+	TIMES SOURCE:露出 , 1.50
+	TIMES SOURCE:逸脱 , 1.20
+
+;小柄体型
+SIF TALENT:小柄体型
+	TIMES B , 1.50
+
+;貞操観念
+SIF TALENT:貞操観念
+	TIMES SOURCE:逸脱 , 2.00
+
+;ビデオカメラ
+SIF TEQUIP:53
+	TIMES SOURCE:露出 , 1.20
+;羞恥プレイ
+SIF TEQUIP:57
+	TIMES SOURCE:露出 , 1.20
+
+SOURCE:快Ｖ += A
+SOURCE:痛み += B
+
+EXP:Ｖ経験 += 2
+PRINTL Ｖ経験＋２
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+ENDIF
+
+
+RETURN 1

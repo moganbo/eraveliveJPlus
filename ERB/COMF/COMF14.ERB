@@ -1,0 +1,164 @@
+﻿@COM14
+;クリキャップ
+IF TEQUIP:90
+	PRINTL 触手クリ責め
+	STR:0 = 触手クリ責め
+ELSE
+	;実行者が[淫具知識]を持っているなら効果増
+	SIF TALENT:PLAYER:淫具知識
+		PRINT 高性能
+	PRINTL 電動クリキャップ
+	STR:0 = 電動クリキャップ
+ENDIF
+
+LOSEBASE:体力 += 10
+LOSEBASE:気力 += 80
+
+SOURCE:露出 = 120
+SOURCE:逸脱 = 70
+
+;ABL:Ｃ感覚をみる
+IF ABL:Ｃ感覚 == 0
+	SOURCE:快Ｃ = 200
+ELSEIF ABL:Ｃ感覚 == 1
+	SOURCE:快Ｃ = 400
+ELSEIF ABL:Ｃ感覚 == 2
+	SOURCE:快Ｃ = 900
+ELSEIF ABL:Ｃ感覚 == 3
+	SOURCE:快Ｃ = 1600
+ELSEIF ABL:Ｃ感覚 == 4
+	SOURCE:快Ｃ = 2400
+ELSE
+	SOURCE:快Ｃ = 1500 + (ABL:Ｃ感覚 * 300)
+ENDIF
+
+;実行者が[淫具知識]を持っているなら効果増
+SIF TALENT:PLAYER:淫具知識
+	TIMES SOURCE:快Ｃ , 1.20
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+ENDIF
+
+CALL TRAIN_MESSAGE_B
+
+;クリキャップの着脱
+IF TEQUIP:90
+	IF TEQUIP:14
+		TEQUIP:14 = 0
+	ELSE
+		TEQUIP:14 = 1
+		STAIN:ヴァギナ |= 2
+		STAIN:ヴァギナ |= 4
+	ENDIF
+	T = 0
+ELSE
+	IF TEQUIP:14
+		TEQUIP:14 = 0
+	ELSE
+		TEQUIP:14 = 1
+	ENDIF
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM14
+;クリキャップの着脱
+IF TEQUIP:90
+	IF TEQUIP:14
+		PRINTFORML 触手は%CALLNAME:TARGET%のクリ責めを中断した
+	ELSE
+		PRINTFORML 細かく枝分かれした触手が%CALLNAME:TARGET%のクリトリスを責めはじめた
+	ENDIF
+ELSE
+	IF TEQUIP:14
+		PRINTFORML %CALLNAME:TARGET%から電動クリキャップを外した
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%に電動クリキャップを取り付けた
+	ENDIF
+ENDIF
+
+@EQUIP_COM14
+;クリキャップ装備中
+IF TEQUIP:90
+	PRINTL ＜触手クリ責め中＞
+ELSE
+	PRINTL ＜クリキャップ装備中＞
+ENDIF
+
+LOSEBASE:体力 += 5
+LOSEBASE:気力 += 20
+
+;ABL:Ｃ感覚をみる
+IF ABL:Ｃ感覚 == 0
+	A = 40
+ELSEIF ABL:Ｃ感覚 == 1
+	A = 120
+ELSEIF ABL:Ｃ感覚 == 2
+	A = 250
+ELSEIF ABL:Ｃ感覚 == 3
+	A = 450
+ELSEIF ABL:Ｃ感覚 == 4
+	A = 600
+ELSE
+	A = 375 + (ABL:Ｃ感覚 * 75)
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES A , 0.80
+ELSEIF ABL:親密 == 1
+	TIMES A , 0.90
+ELSEIF ABL:親密 == 2
+	TIMES A , 1.00
+ELSEIF ABL:親密 == 3
+	TIMES A , 1.10
+ELSEIF ABL:親密 == 4
+	TIMES A , 1.20
+ELSE
+	A = A * (ABL:親密 * 5 + 105) / 100
+ENDIF
+
+;実行者が[淫具知識]を持っているなら効果増
+SIF TALENT:PLAYER:淫具知識
+	TIMES A , 1.20
+
+SOURCE:快Ｃ += A
+SOURCE:欲情追加 += 50
+SOURCE:露出 += 50
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+	EXP:PLAYER:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+	EXP:PLAYER:ＢＬ経験 += 1
+ENDIF
+
+SIF TEQUIP:90
+	T += 1
+
+RETURN 1

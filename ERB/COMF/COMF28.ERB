@@ -1,0 +1,405 @@
+﻿@COM28
+;対面座位アナル
+
+PRINTL 対面座位アナル
+
+;-------------------------------------------------
+;実行できるかの判定
+;-------------------------------------------------
+CALL COM_ORDER_COMMON
+SIF RESULT == 0
+	RETURN 0
+
+STR:0 = 対面座位アナル
+CALL TRAIN_MESSAGE_B
+
+;-------------------------------------------------
+;射精ゲージチェック
+;-------------------------------------------------
+SIF TALENT:PLAYER:ふたなり || TALENT:PLAYER:オトコ
+	BASE:PLAYER:射精 += CALC_EJAC(SELECTCOM, PLAYER)
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+LOSEBASE:体力 += 60
+LOSEBASE:気力 += 80
+
+SOURCE:情愛 = 100
+SOURCE:中毒充足 = 100
+SOURCE:露出 = 100
+
+;ABL:Ａ感覚をみる
+IF ABL:Ａ感覚 == 0
+	SOURCE:快Ａ += 10
+	SOURCE:情愛 += 10
+	SOURCE:屈従 += 80
+ELSEIF ABL:Ａ感覚 == 1
+	SOURCE:快Ａ += 30
+	SOURCE:情愛 += 130
+	SOURCE:屈従 += 300
+ELSEIF ABL:Ａ感覚 == 2
+	SOURCE:快Ａ += 200
+	SOURCE:情愛 += 500
+	SOURCE:屈従 += 700
+ELSEIF ABL:Ａ感覚 == 3
+	SOURCE:快Ａ += 500
+	SOURCE:情愛 += 1000
+	SOURCE:屈従 += 1500
+ELSEIF ABL:Ａ感覚 == 4
+	SOURCE:快Ａ += 900
+	SOURCE:情愛 += 1500
+	SOURCE:屈従 += 2600
+ELSE
+	SOURCE:快Ａ += 650 + (ABL:Ａ感覚 * 250)
+	SOURCE:情愛 += 750 + (ABL:Ａ感覚 * 250)
+	SOURCE:屈従 += 500 + (ABL:Ａ感覚 * 700)
+ENDIF
+
+;EXP:Ａ経験をみる
+IF EXP:Ａ経験 < EXPLV:1
+	TIMES SOURCE:快Ａ , 0.10
+	SOURCE:痛み = 18000
+	LOSEBASE:体力 += 40
+	LOSEBASE:気力 += 60
+ELSEIF EXP:Ａ経験 < EXPLV:2
+	TIMES SOURCE:快Ａ , 0.30
+	SOURCE:痛み = 10000
+	LOSEBASE:体力 += 30
+	LOSEBASE:気力 += 50
+ELSEIF EXP:Ａ経験 < EXPLV:3
+	TIMES SOURCE:快Ａ , 0.50
+	SOURCE:痛み = 4500
+	LOSEBASE:体力 += 20
+	LOSEBASE:気力 += 40
+ELSEIF EXP:Ａ経験 < EXPLV:4
+	TIMES SOURCE:快Ａ , 1.00
+	SOURCE:痛み = 1500
+	LOSEBASE:体力 += 10
+	LOSEBASE:気力 += 30
+ELSEIF EXP:Ａ経験 < EXPLV:5
+	TIMES SOURCE:快Ａ , 1.40
+	SOURCE:痛み = 700
+	LOSEBASE:体力 += 0
+	LOSEBASE:気力 += 20
+ELSE
+	TIMES SOURCE:快Ａ , 1.60
+	SOURCE:痛み = 300
+	LOSEBASE:体力 += 0
+	LOSEBASE:気力 += 0
+ENDIF
+
+;PALAM:潤滑をみる
+IF PALAM:潤滑 < PALAMLV:1
+	TIMES SOURCE:快Ａ , 0.40
+	SOURCE:痛み += 10000
+ELSEIF PALAM:潤滑 < PALAMLV:2
+	TIMES SOURCE:快Ａ , 0.80
+	SOURCE:痛み += 3600
+ELSEIF PALAM:潤滑 < PALAMLV:3
+	TIMES SOURCE:快Ａ , 1.00
+	SOURCE:痛み += 1200
+ELSEIF PALAM:潤滑 < PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.40
+	SOURCE:痛み += 200
+ELSEIF PALAM:潤滑 >= PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.80
+	SOURCE:痛み += 100
+ENDIF
+
+;ABL:奉仕精神をみる
+IF ABL:奉仕精神 == 0
+	SOURCE:性行動 = 50
+	SOURCE:達成感 = 10
+	SOURCE:恭順追加 = 100
+	TIMES SOURCE:不潔 , 4.00
+ELSEIF ABL:奉仕精神 == 1
+	SOURCE:性行動 = 150
+	SOURCE:達成感 = 50
+	SOURCE:恭順追加 = 300
+	TIMES SOURCE:不潔 , 2.50
+ELSEIF ABL:奉仕精神 == 2
+	SOURCE:性行動 = 300
+	SOURCE:達成感 = 100
+	SOURCE:恭順追加 = 700
+	TIMES SOURCE:不潔 , 1.50
+ELSEIF ABL:奉仕精神 == 3
+	SOURCE:性行動 = 400
+	SOURCE:達成感 = 200
+	SOURCE:恭順追加 = 1200
+	TIMES SOURCE:不潔 , 1.00
+ELSEIF ABL:奉仕精神 == 4
+	SOURCE:性行動 = 500
+	SOURCE:達成感 = 300
+	SOURCE:恭順追加 = 1800
+	TIMES SOURCE:不潔 , 0.50
+ELSE
+	SOURCE:性行動 = 50 + (ABL:奉仕精神 * 150)
+	SOURCE:達成感 = ABL:奉仕精神 * 100
+	SOURCE:恭順追加 = 750 + (ABL:奉仕精神 * 350)
+	TIMES SOURCE:不潔 , 0.10
+ENDIF
+
+;PALAM:潤滑をみる
+IF PALAM:潤滑 < PALAMLV:1
+	TIMES SOURCE:快Ａ , 0.40
+	SOURCE:痛み += 10000
+ELSEIF PALAM:潤滑 < PALAMLV:2
+	TIMES SOURCE:快Ａ , 0.80
+	SOURCE:痛み += 3600
+ELSEIF PALAM:潤滑 < PALAMLV:3
+	TIMES SOURCE:快Ａ , 1.00
+	SOURCE:痛み += 1200
+ELSEIF PALAM:潤滑 < PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.40
+	SOURCE:痛み += 200
+ELSEIF PALAM:潤滑 >= PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.80
+	SOURCE:痛み += 100
+ENDIF
+
+;調教者がふたなり
+IF ASSIPLAY
+	SIF TALENT:ASSI:ふたなり
+		TIMES SOURCE:快Ｖ , 2.50
+ENDIF
+
+;小柄体形
+SIF TALENT:小柄体型
+	TIMES SOURCE:痛み , 2.00
+
+;貞操観念
+IF TALENT:貞操観念
+	IF EXP:Ａ経験 == 0
+		TIMES SOURCE:情愛 , 1.20
+		TIMES SOURCE:恭順追加 , 1.10
+		SOURCE:反感追加 = 500
+	ELSE
+		TIMES SOURCE:情愛 , 1.20
+		TIMES SOURCE:恭順追加 , 1.10
+		SOURCE:反感追加 = 0
+	ENDIF
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES SOURCE:快Ａ , 0.60
+	TIMES SOURCE:屈従 , 0.60
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES SOURCE:快Ａ , 0.80
+	TIMES SOURCE:屈従 , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES SOURCE:快Ａ , 1.00
+	TIMES SOURCE:屈従 , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.20
+	TIMES SOURCE:屈従 , 1.20
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.40
+	TIMES SOURCE:屈従 , 1.40
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES SOURCE:情愛 , 0.60
+	TIMES SOURCE:反感追加 , 2.00
+ELSEIF ABL:親密 == 1
+	TIMES SOURCE:情愛 , 0.80
+	TIMES SOURCE:反感追加 , 1.50
+ELSEIF ABL:親密 == 2
+	TIMES SOURCE:情愛 , 1.00
+	TIMES SOURCE:反感追加 , 1.00
+ELSEIF ABL:親密 == 3
+	TIMES SOURCE:情愛 , 1.20
+	TIMES SOURCE:反感追加 , 0.80
+ELSEIF ABL:親密 == 4
+	TIMES SOURCE:情愛 , 1.40
+	TIMES SOURCE:反感追加 , 0.60
+ELSE
+	SOURCE:情愛 = SOURCE:情愛 * (ABL:親密 * 10 + 110) / 100
+	TIMES SOURCE:反感追加 , 0.30
+ENDIF
+
+;プレイヤーのABL:技巧をみる
+IF ABL:PLAYER:技巧 == 0
+	SOURCE:情愛 += 100
+	SOURCE:液体追加 += 0
+	A = 0
+ELSEIF ABL:PLAYER:技巧 == 1
+	SOURCE:情愛 += 150
+	SOURCE:液体追加 += 50
+	A = 0
+ELSEIF ABL:PLAYER:技巧 == 2
+	SOURCE:情愛 += 200
+	SOURCE:液体追加 = 100
+	A = 0
+ELSEIF ABL:PLAYER:技巧 == 3
+	SOURCE:情愛 += 300
+	SOURCE:液体追加 += 150
+	A = 50
+ELSEIF ABL:PLAYER:技巧 == 4
+	SOURCE:情愛 += 500
+	SOURCE:液体追加 += 250
+	A = 100
+ELSE
+	SOURCE:情愛 += 50 + (ABL:PLAYER:技巧 * 150)
+	SOURCE:液体追加 += 25 + (ABL:PLAYER:技巧 * 75)
+	A = (ABL:PLAYER:技巧 * 100) - 200
+ENDIF
+
+SOURCE:快Ｃ += A
+
+
+;TALENT:恋慕をみる
+SIF TALENT:恋慕
+	TIMES SOURCE:情愛 , 3.00
+	TIMES SOURCE:中毒充足 , 2.00
+	TIMES SOURCE:恭順追加 , 2.00
+
+;主導権をチェック
+IF TFLAG:45 == 0
+	;主導権が主人公側
+	;ABL:従順をみる
+	IF ABL:親密 <= 1
+		SOURCE:受動 += 300 + (ABL:親密 * 50)
+	ELSEIF ABL:親密 <= 3
+		SOURCE:受動 += 600 + (ABL:親密 * 100)
+	ELSEIF ABL:親密 <= 5
+		SOURCE:受動 += 800 + (ABL:親密 * 120)
+	ELSEIF ABL:親密 <= 8
+		SOURCE:受動 += 1000 + (ABL:親密 * 140)
+	ELSEIF ABL:親密 <= 11
+		SOURCE:受動 += 1200 + (ABL:親密 * 160)
+	ELSE
+		SOURCE:受動 += 1500 + (ABL:親密 * 180)
+	ENDIF
+ELSE
+	;主導権が相手側
+	;ABL:サドっ気をみる
+	IF ABL:サドっ気 == 0
+		SOURCE:征服 = 600
+	ELSEIF ABL:サドっ気 == 1
+		SOURCE:征服 = 900
+	ELSEIF ABL:サドっ気 == 2
+		SOURCE:征服 = 1200
+	ELSEIF ABL:サドっ気 == 3
+		SOURCE:征服 = 1600
+	ELSEIF ABL:サドっ気 == 4
+		SOURCE:征服 = 2000
+	ELSE
+		SOURCE:征服 = 1000 + (ABL:サドっ気 * 300)
+	ENDIF
+ENDIF
+
+;好感度ランダム変化
+A = RAND:10 + 5
+SIF TALENT:恋慕 || TALENT:恋人
+	A += 5
+SIF TALENT:親愛
+	A += 5
+;合意がないと好感度が下がる
+IF TALENT:合意 == 0 && TFLAG:48 == 0
+	A -= 10
+	SOURCE:反感追加 += 500
+ENDIF
+TFLAG:30 += A
+TFLAG:37 += A / 2
+
+EXP:Ａ経験 += 2
+PRINTL Ａ経験＋２
+
+;異常経験増加
+EXP:異常経験 += 1
+PRINTFORML %EXPNAME:50%＋１
+
+;既成事実3に相当
+TFLAG:200 = 3
+
+;-------------------------------------------------
+;射精チェック
+;-------------------------------------------------
+CALL SAMEN_CHECK
+;;オーバーフロー対策に、値が大きすぎる場合と、負の場合は調整を加える
+;IF BASE:PLAYER:射精 > 100000000 || BASE:PLAYER:射精 < 0
+;	BASE:PLAYER:射精 = 100000000
+;ENDIF
+;S = BASE:PLAYER:射精
+;EJAC = MAXBASE:PLAYER:射精
+;
+;IF  S > EJAC * 2
+;	E = 2
+;ELSEIF S > EJAC
+;	E = 1
+;ELSE
+;	E = 0
+;ENDIF
+
+IF E >= 1
+	SIF ABL:親密 >= 3 && ABL:欲望 >= 3 && FLAG:6
+		PRINTFORML %CALLNAME:TARGET%は%CALLNAME:PLAYER%の首に手を回して抱きついてきた…
+	PRINTFORML 　
+
+	;射精先タイプの設定
+	TFLAG:703 = 2
+	;射精先選択の可・不可
+	TFLAG:704 = 0
+	;汎用的な処理はこの関数で行う
+	;（射精ゲージの再計算や射精経験の上昇と共通部分の表示）
+	CALL SAMEN_SHOOT
+ENDIF
+
+;;大量射精
+;IF E == 2
+;	EXP:PLAYER:射精経験 += 2
+;	EXP:精液経験 += 1
+;	PRINTL 大量射精
+;	PRINTL 精液経験＋１
+;	;Ｐに精液汚れ
+;	STAIN:PLAYER:ペニス |= 4
+;
+;	BASE:PLAYER:射精 -= EJAC*2
+;	SIF BASE:PLAYER:射精 >= EJAC
+;		BASE:PLAYER:射精 = EJAC-1
+;
+;	;セックスで射精フラグ
+;	TFLAG:2 = 2
+;;通常の射精
+;ELSEIF E == 1
+;	EXP:PLAYER:射精経験 += 1
+;	;Ｐに精液汚れ
+;	PRINTL 射精
+;	STAIN:PLAYER:ペニス |= 4
+;
+;	BASE:PLAYER:射精 -= EJAC
+;	SIF BASE:PLAYER:射精 >= EJAC
+;		BASE:PLAYER:射精 = EJAC-1
+;
+;	;セックスで射精フラグ
+;	TFLAG:2 = 1
+;ENDIF
+
+;奴隷のＡ⇔調教者のＰの汚れが移動
+STAIN:アナル |= STAIN:PLAYER:ペニス
+STAIN:PLAYER:ペニス |= STAIN:アナル
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +4
+	EXP:レズ経験 += 4
+ENDIF
+
+IF ASSIPLAY == 0
+	IF ABL:Ａ感覚 >= 3
+		TFLAG:30 += 2
+	ELSE
+		TFLAG:30 += 1
+	ENDIF
+ENDIF
+
+RETURN 1
+
+;-------------------------------------------------
+;固有の実行判定
+;-------------------------------------------------
+@COM_ORDER_28
+CALL COM_ORDER_22

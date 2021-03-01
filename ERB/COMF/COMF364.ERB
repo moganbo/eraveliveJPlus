@@ -1,0 +1,235 @@
+﻿@COM_ABLE364
+;着衣Ｇスポット刺激実行判定
+;COM_ABLE共通判定
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;ウフフ中は無理
+SIF TFLAG:44 == 1
+	RETURN 0
+;デート中は無理
+SIF TEQUIP:2
+	RETURN 0
+;オムツ着用中は無理
+SIF TEQUIP:20
+	RETURN 0
+;オトコだとダメ
+SIF TALENT:オトコ
+	RETURN 0
+;潤滑10000以上かつ、欲情10000以上が必要
+SIF PALAM:潤滑 < 10000 || PALAM:欲情 < 10000
+	RETURN 0
+;欲望6以上が必要
+SIF ABL:欲望 < 6
+	RETURN 0
+;親密10以上or好感度2000以上or恋人が必要
+SIF ABL:親密 < 10 && CFLAG:2 < 2000 && TALENT:恋人 == 0
+	RETURN 0
+;合意が必要
+SIF TALENT:合意 == 0
+	RETURN 0
+;ムードか酒の勢いが必要
+SIF TFLAG:37 < 30 && TFLAG:47 < 20
+	RETURN 0
+;実行者の技巧が4以上ないとダメ
+SIF ABL:PLAYER:技巧 < 4
+	RETURN 0
+;前回コマンドが着衣指挿入れ・着衣Ｇスポット刺激でないとダメ
+SIF PREVCOM != 362 && PREVCOM != 364
+	RETURN 0
+RETURN 1
+
+@TRAIN_MESSAGE_COM364
+;着衣Ｇスポット刺激
+;非処女で恋慕の場合、主導権で分岐
+IF TALENT:処女 == 0 && TALENT:恋慕 && TFLAG:45
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:MASTER%にそのまま指を動かさせた…
+ELSE
+	PRINTFORMW %CALLNAME:MASTER%はそのまま%CALLNAME:TARGET%の中で指を動かした…
+ENDIF
+IF PREVCOM == 364
+	IF EXP:Ｖ経験 <= 1
+		PRINTFORMW %CALLNAME:TARGET%は膣内の異物感に怯えている…
+	ELSEIF EXP:Ｖ経験 >= 1 && EXP:Ｖ経験 <= 30
+		PRINTFORMW %CALLNAME:TARGET%は指の感触に吐息を吐いて耐えている…
+	ELSEIF EXP:Ｖ経験 >= 31 && EXP:Ｖ経験 <= 50
+		PRINTFORMW %CALLNAME:TARGET%は指の感触を楽しんでいるようだ…
+	ELSEIF EXP:Ｖ経験 >= 51 && EXP:Ｖ経験 <= 80
+		PRINTFORMW %CALLNAME:TARGET%は指のうごめく感触にうっとりとしている…
+	ELSEIF EXP:Ｖ経験 >= 81 && EXP:Ｖ経験 <= 120
+		PRINTFORMW %CALLNAME:TARGET%はお腹の中をかき回される感覚に熱い吐息を吐いて悶えている…
+	ELSEIF EXP:Ｖ経験 >= 121
+		PRINTFORMW %CALLNAME:TARGET%は涎をたらし、服が汚れることも気にせず自ら腰を振って快楽を貪っている…
+	ENDIF
+ELSE
+	PRINTFORMW %CALLNAME:PLAYER%は%CALLNAME:TARGET%の膣の中で指を曲げ、ザラついた天井を刺激した…
+ENDIF
+
+@COM364
+;着衣Ｇスポット刺激
+PRINTL 着衣Ｇスポット刺激
+STR:0 = 着衣Ｇスポット刺激
+SELECTCOM = 364
+
+CALL TRAIN_MESSAGE_B
+
+;V経験を伴うコマンドのフラグ(処女膜再生対応)
+TFLAG:19 = 1
+
+LOSEBASE:体力 += 50
+LOSEBASE:気力 += 240
+
+SOURCE:情愛 = 200
+;恋慕ありだと情愛増加
+SIF TALENT:恋慕
+	SOURCE:情愛 += 200
+SOURCE:中毒充足 = 150
+SOURCE:液体追加 = 300
+SOURCE:露出 = 500
+SOURCE:逸脱 = 500
+;恋慕なしだと反感
+SIF TALENT:恋慕 == 0
+	SOURCE:反感追加 = 200
+SOURCE:受動 = 100
+SOURCE:懐疑 = 300
+
+;ABL:Ｖ感覚をみる
+IF ABL:Ｖ感覚 == 0
+	SOURCE:快Ｖ = 10
+	SOURCE:屈従 = 20
+ELSEIF ABL:Ｖ感覚 == 1
+	SOURCE:快Ｖ = 90
+	SOURCE:屈従 = 150
+ELSEIF ABL:Ｖ感覚 == 2
+	SOURCE:快Ｖ = 400
+	SOURCE:屈従 = 500
+ELSEIF ABL:Ｖ感覚 == 3
+	SOURCE:快Ｖ = 1000
+	SOURCE:屈従 = 1200
+ELSEIF ABL:Ｖ感覚 == 4
+	SOURCE:快Ｖ = 1600
+	SOURCE:屈従 = 1800
+ELSEIF ABL:Ｖ感覚 >=5 && ABL:Ｖ感覚 < 10
+	SOURCE:快Ｖ = ABL:Ｖ感覚 * ABL:Ｖ感覚 * 80
+	SOURCE:屈従 = 900 + (ABL:Ｖ感覚 * 300)
+ELSE
+	SOURCE:快Ｖ = 1080 + (ABL:Ｖ感覚 * 600)
+	SOURCE:屈従 = 900 + (ABL:Ｖ感覚 * 300)
+ENDIF
+
+;EXP:Ｖ経験をみる
+IF EXP:Ｖ経験 < EXPLV:1
+	TIMES SOURCE:快Ｖ , 0.20
+	TIMES SOURCE:屈従, 0.20
+	SOURCE:痛み = 150
+ELSEIF EXP:Ｖ経験 < EXPLV:2
+	TIMES SOURCE:快Ｖ , 0.50
+	TIMES SOURCE:屈従, 0.50
+	SOURCE:痛み = 80
+ELSEIF EXP:Ｖ経験 < EXPLV:3
+	TIMES SOURCE:快Ｖ , 1.00
+	TIMES SOURCE:屈従, 0.80
+	SOURCE:痛み = 80
+ELSEIF EXP:Ｖ経験 < EXPLV:4
+	TIMES SOURCE:快Ｖ , 1.20
+	TIMES SOURCE:屈従, 1.00
+	SOURCE:痛み = 0
+ELSEIF EXP:Ｖ経験 < EXPLV:5
+	TIMES SOURCE:快Ｖ , 1.60
+	TIMES SOURCE:屈従, 1.20
+	SOURCE:痛み = 0
+ELSE
+	TIMES SOURCE:快Ａ , 1.80
+	TIMES SOURCE:屈従, 1.50
+	SOURCE:痛み = 0
+ENDIF
+
+;PALAM:潤滑をみる
+IF PALAM:潤滑 < PALAMLV:1
+	TIMES SOURCE:快Ｖ , 0.10
+	SOURCE:痛み += 2000
+	TIMES SOURCE:痛み , 3.00
+ELSEIF PALAM:潤滑 < PALAMLV:2
+	TIMES SOURCE:快Ｖ , 0.20
+	SOURCE:痛み += 800
+	TIMES SOURCE:痛み , 1.00
+ELSEIF PALAM:潤滑 < PALAMLV:3
+	TIMES SOURCE:快Ｖ , 0.60
+	TIMES SOURCE:痛み , 0.80
+ELSEIF PALAM:潤滑 < PALAMLV:4
+	TIMES SOURCE:快Ｖ , 1.00
+	TIMES SOURCE:痛み , 0.50
+ELSEIF PALAM:潤滑 >= PALAMLV:4
+	TIMES SOURCE:快Ｖ , 2.00
+	TIMES SOURCE:痛み , 0.10
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES SOURCE:快Ｖ , 1.50
+	TIMES SOURCE:中毒充足 , 0.90
+	TIMES SOURCE:液体追加 , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES SOURCE:快Ｖ , 1.80
+	TIMES SOURCE:中毒充足 , 1.00
+	TIMES SOURCE:液体追加 , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES SOURCE:快Ｖ , 2.10
+	TIMES SOURCE:中毒充足 , 1.10
+	TIMES SOURCE:液体追加 , 1.10
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES SOURCE:快Ｖ , 3.20
+	TIMES SOURCE:中毒充足 , 1.20
+	TIMES SOURCE:液体追加 , 1.20
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES SOURCE:快Ｖ , 4.30
+	TIMES SOURCE:中毒充足 , 1.30
+	TIMES SOURCE:液体追加 , 1.30
+ENDIF
+
+;Ｖ敏感、鈍感をみる
+;快Ｖ自体のチェックは後でまとめてやる
+IF TALENT:Ｖ鈍感
+	TIMES SOURCE:痛み , 1.50
+	TIMES SOURCE:屈従 , 1.50
+	TIMES SOURCE:逸脱 , 1.50
+ELSEIF TALENT:Ｖ敏感
+	TIMES SOURCE:痛み , 0.60
+	TIMES SOURCE:屈従 , 0.60
+	TIMES SOURCE:逸脱 , 0.60
+ENDIF
+
+;処女で貞操観念
+IF EXP:Ｖ経験 == 0 && TALENT:貞操観念
+	TIMES SOURCE:屈従 , 2.00
+ENDIF
+
+EXP:Ｖ経験 += 1
+PRINTL Ｖ経験＋１
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +3
+	EXP:レズ経験 += 3
+	EXP:PLAYER:レズ経験 += 3
+ENDIF
+
+;好感度ランダム変化
+A = RAND:11 + 5
+;合意がないと好感度が下がる
+IF TALENT:合意 == 0 && TFLAG:48 == 0
+	A -= 12
+;恋慕でも反感がつく
+	IF TALENT:恋慕
+	SOURCE:反感追加 += 300
+	ELSE
+;恋慕なしだと反感増加
+	SOURCE:反感追加 += 800
+	ENDIF
+ENDIF
+TFLAG:30 += A
+TFLAG:37 += A / 2
+
+
+RETURN 1
+

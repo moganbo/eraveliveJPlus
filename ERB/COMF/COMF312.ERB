@@ -1,0 +1,690 @@
+﻿@COM_ABLE312
+;頭を撫でる実行判定
+;COM_ABLE共通判定
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;ウフフ中は無理
+SIF TFLAG:44 == 1
+	RETURN 0
+;幼児退行or幼稚がある場合は、無条件実行可能
+SIF TALENT:幼児 == 1 || TALENT:幼稚 == 1
+	RETURN 1
+;親密が2以上or好感度100以上必要(全く知らない人は流石に嫌！って言われる)
+SIF ABL:親密 < 2 && CFLAG:2 < 30
+	RETURN 0
+RETURN 1
+
+@COM312
+;頭を撫でる
+;使用変数をAとその配列、Lのみに絞る
+;うにゅほさん用コマンド！では無いので好きに使って下さい
+;お子様なキャラだと効果が高いです。
+;幼児退行、幼稚持ちでも嫌がるようにする場合は口上側でTFLAG:18 = -1（失敗状態）にするか、
+;台詞だけ嫌がらせたい場合は地の文カットを利用してください。
+
+PRINTL 頭を撫でる
+STR:0 = 頭を撫でる
+CALL GET_SUCCESS_RATE
+A:1 = A
+A:2 = 90 + A:1 / 5
+SIF A:2 > 99
+	A:2 = 99
+A:1 = RAND:100
+;幼児退行、幼稚持ちは5%確率ボーナス(マイナスにすると処理が面倒なので5以上の時のみ補正する)
+SIF (TALENT:幼児 != 0 || TALENT:幼稚 != 0) && A:1 >= 5
+	A:1 -= 5
+IF A:1 <= 9
+	;10％で大成功
+	TFLAG:18 = 1
+ELSEIF A:1 >= A:2
+	;5～1％で失敗
+	TFLAG:18 = -1
+ELSE
+	;残りは成功
+	TFLAG:18 = 0
+ENDIF
+
+;うにゅほさんは失敗せず
+IF NAME_CSV(NO:TARGET, 0) == "空"
+	TFLAG:18 += 1
+	SIF TFLAG:18 == 2
+		TFLAG:18 = 1
+ENDIF
+
+TFLAG:17 = 0
+;幼稚or幼児退行はデフォで強化版とする
+IF (TALENT:幼児 != 0 || TALENT:幼稚 != 0)
+	TFLAG:17 = 1
+;親密4以上or好感度150以上なら実行判定を行い、強化版とする
+ELSEIF ABL:親密 >= 4 || CFLAG:2 >= 150
+
+	A:1 = 0
+	A:3 = 0
+	;強化版判定値(相性で移行値が変動する)
+	IF TFLAG:45 == 0
+		L = NO:PLAYER
+		IF RELATION:L >= 150
+			A:4 = 35
+		ELSEIF RELATION:L > 110
+			A:4 = 40
+		ELSEIF RELATION:L < 90
+			A:4 = 60
+		ELSE
+			A:4 = 50
+		ENDIF
+	ELSE
+		;撫でてとお願いしている立場なので一律
+		A:4 = 40
+	ENDIF
+
+	;----------------------------------
+	; パートナー能力値による強化版移行値算出
+	;----------------------------------
+	;ABL:親密
+	IF ABL:親密 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += ABL:親密 * 3
+		PRINTFORM %ABLNAME:0%LV{ABL:親密}({ABL:親密 * 3})
+		A:3 = 1
+	ENDIF
+	;ABL:欲望
+	IF ABL:欲望 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += ABL:欲望 * 3
+		PRINTFORM %ABLNAME:1%LV{ABL:欲望}({ABL:欲望 * 3})
+		A:3 = 1
+	ENDIF
+	;反発感情
+	IF MARK:反発感情 != 0
+		PRINT  - 
+		A:1 -= MARK:反発感情 * 6
+		PRINTFORM %MARKNAME:3%LV{MARK:反発感情}({MARK:反発感情 * 6})
+		A:3 = 1
+	ENDIF
+	
+	;----------------------------------
+	; パートナー素質による強化版移行値補正
+	;----------------------------------
+	;臆病
+	IF TALENT:臆病 != 0
+		PRINT  - 
+		A:1 -= 5
+		PRINTFORM %TALENTNAME:10%(5)
+		A:3 = 1
+	ENDIF
+	;反抗的
+	IF TALENT:反抗的 != 0
+		PRINT  - 
+		A:1 -= 7
+		PRINTFORM %TALENTNAME:11%(7)
+		A:3 = 1
+	ENDIF
+	;素直
+	IF TALENT:素直 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 10
+		PRINTFORM %TALENTNAME:13%(10)
+		A:3 = 1
+	ENDIF
+	;大人しい
+	IF TALENT:大人しい != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 7
+		PRINTFORM %TALENTNAME:14%(7)
+		A:3 = 1
+	ENDIF
+	;プライド高い
+	IF TALENT:プライド高い != 0
+		PRINT  - 
+		A:1 -= 10
+		PRINTFORM %TALENTNAME:15%(10)
+		A:3 = 1
+	ENDIF
+	;生意気
+	IF TALENT:生意気 != 0
+		PRINT  - 
+		A:1 -= 8
+		PRINTFORM %TALENTNAME:16%(8)
+		A:3 = 1
+	ENDIF
+	;無関心
+	IF TALENT:無関心 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 8
+		PRINTFORM %TALENTNAME:21%(8)
+		A:3 = 1
+	ENDIF
+	;感情乏しい
+	IF TALENT:感情乏しい != 0
+		PRINT  - 
+		A:1 -= 8
+		PRINTFORM %TALENTNAME:22%(8)
+		A:3 = 1
+	ENDIF
+	;解放
+	IF TALENT:解放 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 10
+		PRINTFORM %TALENTNAME:33%(10)
+		A:3 = 1
+	ENDIF
+	;抵抗
+	IF TALENT:抵抗 != 0
+		PRINT  - 
+		A:1 -= 8
+		PRINTFORM %TALENTNAME:34%(8)
+		A:3 = 1
+	ENDIF
+	;恥じらい
+	IF TALENT:恥じらい != 0
+		PRINT  - 
+		A:1 -= 5
+		PRINTFORM %TALENTNAME:35%(5)
+		A:3 = 1
+	ENDIF
+	;恥薄い
+	IF TALENT:恥薄い != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 10
+		PRINTFORM %TALENTNAME:36%(10)
+		A:3 = 1
+	ENDIF
+	;弱味 強化版判定の為、マイナスとして扱う
+	IF TALENT:弱味 != 0
+		PRINT  - 
+		A:1 -= 5
+		PRINTFORM %TALENTNAME:37%(5)
+		A:3 = 1
+	ENDIF
+	;献身的
+	IF TALENT:献身的 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 9
+		PRINTFORM %TALENTNAME:63%(9)
+		A:3 = 1
+	ENDIF
+	;快感に素直
+	IF TALENT:快感に素直 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 8
+		PRINTFORM %TALENTNAME:70%(8)
+		A:3 = 1
+	ENDIF
+	;快感の否定
+	IF TALENT:快感の否定 != 0
+		PRINT  - 
+		A:1 -= 8
+		PRINTFORM %TALENTNAME:71%(8)
+		A:3 = 1
+	ENDIF
+	;即落ち
+	IF TALENT:即落ち != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 20
+		PRINTFORM %TALENTNAME:73%(20)
+		A:3 = 1
+	ENDIF
+	;マゾ
+	IF TALENT:マゾ != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 8
+		PRINTFORM %TALENTNAME:79%(8)
+		A:3 = 1
+	ENDIF
+	;男嫌い
+	IF TALENT:男嫌い != 0 && TALENT:PLAYER:オトコ != 0
+		PRINT  - 
+		A:1 -= 7
+		PRINTFORM %TALENTNAME:82%(7)
+		A:3 = 1
+	ENDIF
+	;恋慕
+	IF TALENT:恋慕 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 10
+		PRINTFORM %TALENTNAME:85%(10)
+		A:3 = 1
+	ENDIF
+	;妄信
+	IF TALENT:妄信 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 15
+		PRINTFORM %TALENTNAME:86%(15)
+		A:3 = 1
+	ENDIF
+	;親愛
+	IF TALENT:親愛 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 15
+		PRINTFORM %TALENTNAME:88%(15)
+		A:3 = 1
+	ENDIF
+	;相愛
+	IF TALENT:相愛 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 20
+		PRINTFORM %TALENTNAME:89%(20)
+		A:3 = 1
+	ENDIF
+	;母性
+	IF TALENT:母性 != 0
+		PRINT  - 
+		A:1 -= 10
+		PRINTFORM %TALENTNAME:136%(10)
+		A:3 = 1
+	ENDIF
+	;小人体型
+	IF TALENT:小人体型 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 12
+		PRINTFORM %TALENTNAME:149%(12)
+		A:3 = 1
+	ENDIF
+	;合意
+	IF TALENT:合意 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 10
+		PRINTFORM %TALENTNAME:152%(10)
+		A:3 = 1
+	ENDIF
+	;恋人
+	IF TALENT:恋人 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 12
+		PRINTFORM %TALENTNAME:153%(12)
+		A:3 = 1
+	ENDIF
+	;服従
+	IF TALENT:服従 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 12
+		PRINTFORM %TALENTNAME:180%(12)
+		A:3 = 1
+	ENDIF
+	;烙印
+	IF TALENT:烙印 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 15
+		PRINTFORM %TALENTNAME:181%(15)
+		A:3 = 1
+	ENDIF
+	;隷属
+	IF TALENT:隷属 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 20
+		PRINTFORM %TALENTNAME:182%(20)
+		A:3 = 1
+	ENDIF
+	
+	;----------------------------------
+	; 主人公素質による強化版移行値補正
+	;----------------------------------
+	;ABL:技巧
+	IF ABL:PLAYER:技巧 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += ABL:PLAYER:技巧
+		PRINTFORM %ABLNAME:2%LV{ABL:PLAYER:技巧}({ABL:PLAYER:技巧 * 3})
+		A:3 = 1
+	ENDIF
+	
+	;魅力
+	IF TALENT:PLAYER:魅惑 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 8
+		PRINTFORM %TALENTNAME:91%(8)
+		A:3 = 1
+	ENDIF
+	;謎の魅力
+	IF TALENT:PLAYER:謎の魅力 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 12
+		PRINTFORM %TALENTNAME:92%(12)
+		A:3 = 1
+	ENDIF
+	;鼓舞
+	IF TALENT:PLAYER:鼓舞 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 5
+		PRINTFORM %TALENTNAME:118%(5)
+		A:3 = 1
+	ENDIF
+	;母性
+	IF TALENT:PLAYER:母性 != 0
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 10
+		PRINTFORM %TALENTNAME:136%(10)
+		A:3 = 1
+	ENDIF
+
+	;----------------------------------
+	; 気候による強化版移行値補正
+	;----------------------------------
+	;天気：晴れ
+	IF TIME:5 <= 1
+		SIF A:3 != 0
+			PRINT  + 
+		A:1 += 5
+		PRINTFORM 天気:晴れ(5)
+		A:3 = 1
+	ENDIF
+
+	;----------------------------------
+	; 好感度による強化版移行値補正
+	;----------------------------------
+	;好感度不足
+	IF CFLAG:2 < 200
+		PRINT  - 
+		A:1 -= 10
+		PRINTFORM 好感度不足(10)
+		A:3 = 1
+	;好感度200以上
+	ELSE
+		A:2 = 0
+		SIF A:3 != 0
+			PRINT  + 
+		IF CFLAG:2 < 1000
+			A:2 = 5
+		ELSE
+			A:2 = CFLAG:2 / 100
+		ENDIF
+		A:1 += A:2
+		PRINTFORM 好感度({A:2})
+	ENDIF
+
+	;合計を表示(40以上で実行)
+	PRINTFORM  = {A:1}
+
+	;----------------------------------
+	; 強化版実行判定
+	;----------------------------------
+	;デート中は子ども扱いされたと誤解される為、強化版になり辛い
+	SIF TEQUIP:2 != 0
+		A:4 += 15
+	IF A:1 < A:4
+		PRINTFORM  < 強化版移行値{A:4}
+	ELSEIF A:1 == A:4
+		PRINTFORM  = 強化版移行値{A:4}
+	ELSEIF A:1 > A:4
+		PRINTFORM  > 強化版移行値{A:4}
+	ENDIF
+
+	WAIT
+
+	;実行できる場合
+	IF A:1 >= A:4
+		;強化版確定
+		TFLAG:17 = 1
+	ENDIF
+
+ENDIF
+
+CALL TRAIN_MESSAGE_B
+
+;幼児退行、幼稚持ちは気力消費が減るが体力消費が若干増える
+IF (TALENT:幼児 == 1 || TALENT:幼稚 == 1)
+	LOSEBASE:体力 += 15
+	LOSEBASE:気力 += 50
+ELSE
+	LOSEBASE:体力 += 10
+	LOSEBASE:気力 += 60
+ENDIF
+
+
+;固定で獲得するソース、接触、歓楽
+SOURCE:接触 = 10
+SOURCE:歓楽 = 100
+
+;ABL:親密をみる
+IF ABL:親密 <= 1
+	SOURCE:歓楽 += 200 + (ABL:親密 * 20)
+ELSEIF ABL:親密 <= 3
+	SOURCE:歓楽 += 400 + (ABL:親密 * 40)
+ELSEIF ABL:親密 <= 5
+	SOURCE:歓楽 += 500 + (ABL:親密 * 50)
+	SOURCE:接触 += 400 + (ABL:親密 * 30)
+ELSEIF ABL:親密 <= 8
+	SOURCE:歓楽 += 700 + (ABL:親密 * 60)
+	SOURCE:接触 += 600 + (ABL:親密 * 40)
+ELSEIF ABL:親密 <= 11
+	SOURCE:歓楽 += 1200 + (ABL:親密 * 80)
+	SOURCE:接触 += 800 + (ABL:親密 * 40)
+ELSE
+	SOURCE:歓楽 += 1800 + (ABL:親密 * 50)
+	SOURCE:接触 += 1700 + (ABL:親密 * 30)
+ENDIF
+
+;好感度をみる
+IF CFLAG:2 <= 300
+	SOURCE:歓楽 += CFLAG:2
+ELSEIF CFLAG:2 <= 3000
+	SOURCE:歓楽 += 500 + (CFLAG:2 - 300) / 3
+ELSE
+	SOURCE:歓楽 += 2000 + (CFLAG:2 - 3000) / 5
+ENDIF
+SIF SOURCE:歓楽 < 0
+	SOURCE:歓楽 = 0
+
+;主導権をチェック
+IF TFLAG:45 == 0
+	;主導権が主人公側
+	;ABL:親密をみる
+	IF ABL:親密 == 0
+		SOURCE:受動 = 150 + (ABL:親密 * 5)
+	ELSEIF ABL:親密 <= 1
+		SOURCE:受動 = 300 + (ABL:親密 * 10)
+	ELSEIF ABL:親密 <= 3
+		SOURCE:受動 = 400 + (ABL:親密 * 20)
+	ELSEIF ABL:親密 <= 5
+		SOURCE:受動 = 550 + (ABL:親密 * 40)
+	ELSEIF ABL:親密 <= 7
+		SOURCE:受動 = 700 + (ABL:親密 * 50)
+	ELSE
+		SOURCE:受動 = 1000 + (ABL:親密 * 100)
+	ENDIF
+ELSE
+	;主導権が相手側
+	;奉仕精神ををみる
+	IF ABL:奉仕精神 == 0
+		SOURCE:達成感 = 150
+		SOURCE:征服 = 300
+	ELSEIF ABL:奉仕精神 <= 2
+		SOURCE:達成感 = 300
+		SOURCE:征服 = 280
+	ELSEIF ABL:奉仕精神 <= 4
+		SOURCE:達成感 = 500
+		SOURCE:中毒充足 = 100
+		SOURCE:征服 = 260
+	ELSEIF ABL:奉仕精神 <= 6
+		SOURCE:達成感 = 700
+		SOURCE:中毒充足 = 300
+		SOURCE:征服 = 240
+	ELSEIF ABL:奉仕精神 <= 8
+		SOURCE:達成感 = 900
+		SOURCE:中毒充足 = 500
+		SOURCE:征服 = 120
+	ELSE
+		SOURCE:達成感 = 1000 + (ABL:奉仕精神 * 150)
+		SOURCE:中毒充足 = 900
+	ENDIF
+	;母性所持の場合、愛情経験を＋
+	IF TALENT:母性
+		EXP:愛情経験 += 1
+		SIF TFLAG:17 == 0
+			PRINTFORML %EXPNAME:23%+1
+		TIMES SOURCE:達成感, 1.50
+	ENDIF
+ENDIF
+
+;好感度ランダム変化
+A:1 = RAND:7 + 1
+
+;パワーアップ版ならソースを追加
+IF TFLAG:17 != 0
+	TIMES SOURCE:歓楽 , 1.20
+	TIMES SOURCE:接触 , 2.00
+	TIMES SOURCE:達成感 , 1.50
+	TIMES SOURCE:受動 , 1.50
+	A:1 += 2
+	;幼児退行or幼稚持ちは更にボーナス
+	SIF (TALENT:幼児 != 0 || TALENT:幼稚 != 0)
+		A:1 += 2
+
+	;主導権があなた
+	IF TFLAG:45 == 0
+		;幼児退行、幼稚所持の場合、愛情経験を＋
+		IF (TALENT:幼児 != 0 || TALENT:幼稚 != 0)
+			PRINTFORML %EXPNAME:23%+1
+			EXP:愛情経験 += 1
+		ENDIF
+	ELSE
+		;母性所持の場合、愛情経験を＋
+		IF TALENT:母性 != 0
+			TIMES SOURCE:達成感 , 1.50
+			PRINTFORML %EXPNAME:23%+2
+			EXP:愛情経験 += 1
+		ENDIF
+	ENDIF
+ENDIF
+
+;親密が低いと好感度低下
+IF ABL:親密 == 0
+	A:1 -= 2
+ELSEIF ABL:親密 <= 1
+	A:1 -= 1
+ENDIF
+;好感度が低いと好感度低下
+IF CFLAG:2 <= 20
+	A:1 -= 3
+ELSEIF CFLAG:2 <= 80
+	A:1 -= 2
+ELSEIF CFLAG:2 <= 150
+	A:1 -= 1
+ENDIF
+;反発があると好感度低下
+IF MARK:反発感情 >= 3
+	A:1 -= 3
+ELSEIF MARK:反発感情 >= 2
+	A:1 -= 2
+ELSEIF MARK:反発感情 >= 1
+	A:1 -= 1
+ENDIF
+
+
+;好感度変化
+TFLAG:30 += A:1
+
+IF TFLAG:18 == -1
+	TIMES SOURCE:歓楽 , 0.10
+	TIMES SOURCE:接触 , 0.50
+	TIMES SOURCE:達成感 , 0.50
+	TIMES SOURCE:受動 , 0.50
+	TIMES SOURCE:情愛 , 0.50
+	TFLAG:30 -= 10
+	TFLAG:37 -= 5
+ELSEIF TFLAG:18 == 0
+	TIMES SOURCE:歓楽 , 1.00
+	TIMES SOURCE:接触 , 1.00
+	TIMES SOURCE:達成感 , 1.00
+	TIMES SOURCE:受動 , 1.00
+	TIMES SOURCE:情愛 , 1.00
+	TFLAG:37 += A:1
+ELSE
+	TIMES SOURCE:歓楽 , 2.00
+	TIMES SOURCE:接触 , 2.00
+	TIMES SOURCE:達成感 , 2.00
+	TIMES SOURCE:受動 , 2.00
+	TIMES SOURCE:情愛 , 2.00
+	TFLAG:30 += 2
+	TFLAG:37 += 5 + A:1
+ENDIF
+
+;デート中はムードダウン
+;子供扱いしないでよね！ってやつです
+IF TEQUIP:2 > 0
+	;幼児、幼稚持ちは純粋に喜ぶ
+	IF (TALENT:幼児 != 0 || TALENT:幼稚 != 0)
+		TFLAG:37 += RAND:3+5
+	ELSE
+		TFLAG:37 -= RAND:3+5
+	ENDIF
+ENDIF
+
+RETURN 1
+
+;頭を撫でる
+;書き過ぎ？ 気にしたらそこで試合終了ですよ
+@TRAIN_MESSAGE_COM312
+;主導権が主人公
+IF TFLAG:45 == 0
+	PRINTFORM %CALLNAME:PLAYER%は%CALLNAME:TARGET%の頭を
+	SIF TFLAG:17 != 0
+		PRINTFORM 何度も
+	PRINTFORMW 撫でた
+
+	IF TFLAG:18 == 1
+		;幼児退行or幼稚所持
+		IF (TALENT:幼児 == 1 || TALENT:幼稚)
+			PRINTFORML %CALLNAME:TARGET%は眼を細め、心地良さそうにしている…
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は照れ臭そうに、笑みを浮かべている…
+		ENDIF
+	ELSEIF TFLAG:18 == 0
+		;幼児退行or幼稚所持
+		IF (TALENT:幼児 == 1 || TALENT:幼稚)
+			PRINTFORML %CALLNAME:TARGET%は嬉しそうにしている…
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は頬を紅潮させ、恥ずかしそうにしている…
+		ENDIF
+	ELSEIF TFLAG:18 == -1
+		PRINTFORML %CALLNAME:TARGET%は子供扱いした事に怒ったようだ…
+	ENDIF
+;主導権が相手
+ELSEIF TFLAG:45 == 1
+	PRINTFORMW %CALLNAME:TARGET%は%CALLNAME:PLAYER%の頭を撫でた
+
+	IF TFLAG:18 == 1
+		;母性
+		IF TALENT:母性 == 1
+			PRINTFORML %CALLNAME:TARGET%は我が子を愛おしむかの様に、撫でてくれた…
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は笑顔で優しく撫でてくれた…
+		ENDIF
+	ELSEIF TFLAG:18 == 0
+		;母性
+		IF TALENT:母性 == 1
+			PRINTFORML %CALLNAME:TARGET%は笑顔で優しく、ただ撫でてくれた…
+		ELSE
+			PRINTFORML %CALLNAME:TARGET%は呆れた様な表情だったが、優しく撫でてくれた…
+		ENDIF
+	ELSEIF TFLAG:18 == -1
+		PRINTFORML …が、%CALLNAME:TARGET%は直ぐに止めてしまった…
+	ENDIF
+ENDIF
+

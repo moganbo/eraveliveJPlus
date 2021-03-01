@@ -1,0 +1,146 @@
+﻿@COM82
+;アナルフィスト
+PRINTL アナルフィスト
+STR:0 = アナルフィスト
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+LOSEBASE:体力 += 600
+LOSEBASE:気力 += 300
+
+SOURCE:痛み = 1200
+SOURCE:露出 = 1200
+SOURCE:屈従 = 1200
+SOURCE:逸脱 = 1200
+SOURCE:恭順追加 = 1200
+
+;ABL:Ａ感覚をみる
+IF ABL:Ａ感覚 == 0
+	SOURCE:快Ａ = 10
+	SOURCE:情愛 = 10
+	SOURCE:屈従 = 100
+ELSEIF ABL:Ａ感覚 == 1
+	SOURCE:快Ａ = 30
+	SOURCE:情愛 = 30
+	SOURCE:屈従 = 700
+ELSEIF ABL:Ａ感覚 == 2
+	SOURCE:快Ａ = 500
+	SOURCE:情愛 = 100
+	SOURCE:屈従 = 1500
+ELSEIF ABL:Ａ感覚 == 3
+	SOURCE:快Ａ = 1000
+	SOURCE:情愛 = 200
+	SOURCE:屈従 = 3000
+ELSEIF ABL:Ａ感覚 == 4
+	SOURCE:快Ａ = 1700
+	SOURCE:情愛 = 450
+	SOURCE:屈従 = 5000
+ELSE
+	SOURCE:快Ａ = 950 + (ABL:Ａ感覚 * 250)
+	SOURCE:情愛 = ABL:Ａ感覚 * 150
+	SOURCE:屈従 = 500 + (ABL:Ａ感覚 * 1500)
+ENDIF
+
+;ABL:サドっ気をみる
+IF ABL:PLAYER:サドっ気 == 0
+	TIMES SOURCE:痛み , 1.00
+ELSEIF ABL:PLAYER:サドっ気 == 1
+	TIMES SOURCE:痛み , 1.05
+ELSEIF ABL:PLAYER:サドっ気 == 2
+	TIMES SOURCE:痛み , 1.10
+ELSEIF ABL:PLAYER:サドっ気 == 3
+	TIMES SOURCE:痛み , 1.20
+ELSEIF ABL:PLAYER:サドっ気 == 4
+	TIMES SOURCE:痛み , 1.30
+ELSE
+	SOURCE:痛み = SOURCE:痛み * (ABL:PLAYER:サドっ気 * 5 + 125) / 100
+ENDIF
+
+;EXP:Ａ経験をみる
+IF EXP:Ａ経験 < EXPLV:1
+	TIMES SOURCE:快Ａ , 0.10
+	SOURCE:痛み = 20000
+ELSEIF EXP:Ａ経験 < EXPLV:2
+	TIMES SOURCE:快Ａ , 0.30
+	SOURCE:痛み = 12000
+ELSEIF EXP:Ａ経験 < EXPLV:3
+	TIMES SOURCE:快Ａ , 0.50
+	SOURCE:痛み = 5000
+ELSEIF EXP:Ａ経験 < EXPLV:4
+	TIMES SOURCE:快Ａ , 1.00
+	SOURCE:痛み = 1800
+ELSEIF EXP:Ａ経験 < EXPLV:5
+	TIMES SOURCE:快Ａ , 1.40
+	SOURCE:痛み = 1000
+ELSE
+	TIMES SOURCE:快Ａ , 1.60
+	SOURCE:痛み = 600
+ENDIF
+
+;PALAM:潤滑をみる
+IF PALAM:潤滑 < PALAMLV:1
+	TIMES SOURCE:快Ａ , 0.40
+	SOURCE:痛み += 10000
+ELSEIF PALAM:潤滑 < PALAMLV:2
+	TIMES SOURCE:快Ａ , 0.80
+	SOURCE:痛み += 3600
+ELSEIF PALAM:潤滑 < PALAMLV:3
+	TIMES SOURCE:快Ａ , 1.00
+	SOURCE:痛み += 1200
+ELSEIF PALAM:潤滑 < PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.40
+	SOURCE:痛み += 200
+ELSEIF PALAM:潤滑 >= PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.80
+	SOURCE:痛み += 100
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES SOURCE:快Ａ , 0.60
+	TIMES SOURCE:屈従 , 0.60
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES SOURCE:快Ａ , 0.80
+	TIMES SOURCE:屈従 , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES SOURCE:快Ａ , 1.00
+	TIMES SOURCE:屈従 , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.20
+	TIMES SOURCE:屈従 , 1.20
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.40
+	TIMES SOURCE:屈従 , 1.40
+ENDIF
+
+;小柄体形
+SIF TALENT:小柄体型
+	TIMES SOURCE:痛み , 2.00
+
+;Ａ敏感、鈍感をみる
+;快Ａ自体のチェックは後でまとめてやる
+IF TALENT:Ａ鈍感
+	TIMES SOURCE:痛み , 1.50
+	TIMES SOURCE:屈従 , 1.50
+	TIMES SOURCE:逸脱 , 1.50
+ELSEIF TALENT:Ａ敏感
+	TIMES SOURCE:痛み , 0.60
+	TIMES SOURCE:屈従 , 0.60
+	TIMES SOURCE:逸脱 , 0.60
+ENDIF
+
+;処女で貞操観念
+IF EXP:Ｖ経験 == 0 && TALENT:貞操観念
+	SOURCE:屈従 /= 3
+ENDIF
+
+
+EXP:Ａ経験 += 25
+PRINTL Ａ経験＋２５
+
+CALL EVENTKAKUTYOU_A
+
+
+RETURN 1
+

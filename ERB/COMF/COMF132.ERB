@@ -1,0 +1,144 @@
+﻿@COM_ABLE132
+;口枷される実行判定
+;COM_ABLE共通判定
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;ウフフ中じゃないと無理
+SIF TFLAG:44 == 0
+	RETURN 0
+;触手調教中はダメ
+SIF TEQUIP:90
+	RETURN 0
+;解除はいつでも可能
+SIF TEQUIP:MASTER:45
+	RETURN 1
+;異常経験フィルタ
+SIF (FLAG:61 & 1) == 0
+	RETURN 0
+;アイテムを持っているか、アイテムなし設定でないとダメ
+SIF ITEM:ボールギャグ == 0 && NOITEM == 0
+	RETURN 0
+;新妻プレイ中はダメ
+SIF TEQUIP:59
+	RETURN 0
+;主導権がパートナーにないとダメ
+SIF TFLAG:45 == 0
+	RETURN 0
+RETURN 1
+
+@COM132
+;口枷される
+
+PRINTL 口枷される
+STR:0 = 口枷される
+
+;緊縛経験が高いと消費減少
+IF EXP:PLAYER:緊縛経験 < EXPLV:3
+	LOSEBASE:体力 += 20
+	LOSEBASE:気力 += 120
+ELSEIF EXP:PLAYER:緊縛経験 < EXPLV:4
+	LOSEBASE:体力 += 15
+	LOSEBASE:気力 += 100
+ELSE
+	LOSEBASE:体力 += 10
+	LOSEBASE:気力 += 80
+ENDIF
+
+SOURCE:不安 = 50
+SOURCE:中毒充足 = 50
+SOURCE:達成感 = 80
+SOURCE:征服 = 150
+SOURCE:逸脱 = 80
+SOURCE:恭順追加 = 80
+
+EXP:PLAYER:緊縛経験 += 2
+PRINTFORML 緊縛経験＋２(%CALLNAME:PLAYER%)
+
+CALL TRAIN_MESSAGE_B
+
+;ボールギャグの着脱
+IF TEQUIP:PLAYER:45
+	TEQUIP:PLAYER:45 = 0
+ELSE
+	TEQUIP:PLAYER:45 = 1
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM132
+;ボールギャグの着脱
+IF TEQUIP:PLAYER:45
+	PRINTFORML %CALLNAME:TARGET%にボールギャグを取ってもらった
+ELSE
+	PRINTFORML %CALLNAME:TARGET%は%CALLNAME:PLAYER%にボールギャグを嵌めさせた
+ENDIF
+
+
+@EQUIP_COM132
+;ボールギャグ装備中
+PRINTFORML ＜ボールギャグ装備中（%CALLNAME:PLAYER%）＞
+
+;緊縛経験が高いと消費減少
+IF EXP:緊縛経験 < EXPLV:3
+	LOSEBASE:体力 += 10
+	LOSEBASE:気力 += 120
+ELSEIF EXP:緊縛経験 < EXPLV:4
+	LOSEBASE:体力 += 8
+	LOSEBASE:気力 += 100
+ELSE
+	LOSEBASE:体力 += 5
+	LOSEBASE:気力 += 80
+ENDIF
+
+;ABL:サドっ気をみる
+IF ABL:サドっ気 == 0
+	A = 40
+ELSEIF ABL:サドっ気 == 1
+	A = 120
+ELSEIF ABL:サドっ気 == 2
+	A = 250
+ELSEIF ABL:サドっ気 == 3
+	A = 450
+ELSEIF ABL:サドっ気 == 4
+	A = 600
+ELSE
+	A = 375 + (ABL:サドっ気 * 75)
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.60
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.20
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.40
+ENDIF
+
+SOURCE:征服 += A
+SOURCE:達成感 += A
+SOURCE:逸脱 += A
+SOURCE:恭順追加 += A
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+	EXP:PLAYER:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+	EXP:PLAYER:ＢＬ経験 += 1
+ENDIF
+
+EXP:PLAYER:緊縛経験 += 1
+PRINTFORML 緊縛経験＋１(%CALLNAME:PLAYER%)
+EXP:PLAYER:異常経験 += 1
+PRINTFORML %EXPNAME:50%＋１(%CALLNAME:PLAYER%)
+
+RETURN 1

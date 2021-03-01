@@ -1,0 +1,662 @@
+﻿@COM74
+;公開野外ライブ
+
+PRINTL 公開野外ライブ
+
+;-------------------------------------------------
+;成功できるかの判定
+;-------------------------------------------------
+A = 0
+S = 0
+
+;ABL:欲望
+SIF ABL:欲望
+	A += ABL:欲望
+;ABL:露出癖
+SIF ABL:露出癖
+	A += ABL:露出癖 * 2
+;ABL:歌唱技能
+SIF ABL:歌唱技能
+	A += ABL:歌唱技能 * 3
+
+SIF MARK:快楽依存
+	A += MARK:快楽依存 * 2
+SIF MARK:反発感情
+	A -= MARK:反発感情 * 5
+
+;PALAM:欲情
+IF PALAM:欲情 < PALAMLV:1
+	L = 0
+ELSEIF PALAM:欲情 < PALAMLV:2
+	L = 1
+ELSEIF PALAM:欲情 < PALAMLV:3
+	L = 2
+ELSEIF PALAM:欲情 < PALAMLV:4
+	L = 3
+ELSEIF PALAM:欲情 < PALAMLV:5
+	L = 4
+ELSE
+	L = 5
+ENDIF
+SIF L
+	A += L * 2
+
+;自制心
+SIF TALENT:自制心
+	A -= 5
+;目立ちたがり
+SIF TALENT:目立ちたがり
+	A += 5
+;恥じらい
+SIF TALENT:恥じらい
+	A -= 5
+;恥薄い
+SIF TALENT:恥薄い
+	A += 2
+
+;合計を表示(37以上で成功、未満で失敗イベントへ)
+;難易度上昇
+;ビデオで+10、クリキャップまたはオナホール装着で＋4、
+;バイブ系やアナル系の道具で+5、拡張系道具装着でさらに＋3
+V = 37
+SIF TEQUIP:53
+	V += 10
+SIF TEQUIP:14 || TEQUIP:17
+	V += 4
+SIF TEQUIP:11 || TEQUIP:61 || TEQUIP:71
+	V += 5
+SIF TEQUIP:13 || TEQUIP:19 || TEQUIP:46 || TEQUIP:47 || TEQUIP:48 || TEQUIP:49 || TEQUIP:70 || TEQUIP:79
+	V += 5
+SIF TEQUIP:14 || TEQUIP:48 || TEQUIP:70 || TEQUIP:71 || TEQUIP:79 > 2
+	V += 3
+
+;ランダム要素
+V += RAND:41
+B = 1 + RAND:3
+A /= B
+
+;成功、失敗
+IF A < V
+	TFLAG:18 = -1
+	CALL COM74_FAIL
+ELSE
+	TFLAG:18 = 0
+	CALL COM74_SUCCESS
+ENDIF
+
+RETURN 1
+
+@COM74_SUCCESS
+;-------------------------------------------------
+;実行決定
+;-------------------------------------------------
+STR:0 = 公開野外ライブ
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+LOSEBASE:体力 += 500
+LOSEBASE:気力 += 500
+
+A = 750
+B = 900
+C = 0
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+	C += 0
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+	C += 1
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+	C += 2
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+	C += 4
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+	C += 8
+ENDIF
+;ABL:露出癖をみる
+IF ABL:露出癖 == 0
+	SOURCE:中毒充足 += 0
+	SOURCE:液体追加 += 0
+	C += 0
+	TIMES A, 1.00
+ELSEIF ABL:露出癖 == 1
+	SOURCE:中毒充足 += 50
+	SOURCE:液体追加 += 50
+	C += 1
+	TIMES A, 1.20
+ELSEIF ABL:露出癖 == 2
+	SOURCE:中毒充足 += 100
+	SOURCE:液体追加 += 100
+	C += 2
+	TIMES A, 1.40
+ELSEIF ABL:露出癖 == 3
+	SOURCE:中毒充足 += 200
+	SOURCE:液体追加 += 200
+	C += 3
+	TIMES A, 1.60
+ELSEIF ABL:露出癖 == 4
+	SOURCE:中毒充足 += 400
+	SOURCE:液体追加 += 400
+	C += 4
+	TIMES A, 2.00
+ELSE
+	SOURCE:中毒充足 += 800
+	SOURCE:液体追加 += 800
+	C += 5
+	TIMES A, 3.00
+ENDIF
+;ABL:歌唱技能をみる
+IF ABL:歌唱技能 == 0
+	C += 0
+	TIMES A , 0.80
+ELSEIF ABL:歌唱技能 == 1
+	C += 1
+	TIMES A , 1.00
+ELSEIF ABL:歌唱技能 == 2
+	C += 2
+	TIMES A , 1.30
+ELSEIF ABL:歌唱技能 == 3
+	C += 3
+	TIMES A , 1.60
+ELSEIF ABL:歌唱技能 == 4
+	C += 4
+	TIMES A , 2.00
+ELSE
+	C += 5
+	TIMES A , 3.00
+ENDIF
+
+;目立ちたがり
+IF TALENT:目立ちたがり
+	TIMES A , 1.50
+	C += 10
+ENDIF
+;解放
+IF TALENT:解放
+	TIMES A , 1.50
+	C += 5
+ENDIF
+;臆病
+IF TALENT:臆病
+	TIMES B , 2.00
+	C -= 10
+ENDIF
+;恥じらい
+IF TALENT:恥じらい
+	TIMES B , 2.00
+	C -= 7
+ENDIF
+;恥じ薄い
+IF TALENT:恥薄い
+	TIMES B , 0.80
+	C += 7
+ENDIF
+
+;魅惑
+SIF TALENT:魅惑
+	C += 10
+;謎の魅力
+SIF TALENT:謎の魅力
+	C += 25
+;魅力
+SIF TALENT:魅力
+	C += 20
+;鼓舞
+SIF TALENT:鼓舞
+	C += 50
+;人気
+SIF TALENT:人気
+	C += 30
+
+SOURCE:露出 += A/2
+SOURCE:屈従 += A/4
+SOURCE:逸脱 += B
+
+UP:習得 += A/3
+UP:恥情 += A/4
+UP:恐怖 += SOURCE:逸脱/2
+
+;TEQUIPごとにC加算し、レイプ派生判定や経験加算に使用する
+IF TEQUIP:43
+	C += 10
+ENDIF
+IF TEQUIP:14
+	C += 13
+ENDIF
+IF TEQUIP:15 || TEQUIP:16
+	C += 15
+ENDIF
+IF TEQUIP:11
+	C += 25
+ELSEIF TEQUIP:71
+	C += 29
+ENDIF
+IF TEQUIP:43
+	IF TEQUIP:13
+	ELSEIF TEQUIP:46 || TEQUIP:47
+		C += 5
+	ELSEIF TEQUIP:48
+		C += 5
+	ELSEIF TEQUIP:70
+		C += 5
+	ELSEIF TEQUIP:79
+		C += 5
+	ENDIF
+	C += 20
+ENDIF
+IF TEQUIP:60
+	C += 20
+ELSEIF TEQUIP:76
+	C += 15
+ENDIF
+T = C/5
+
+C /= 1 + RAND:3
+IF RAND:3 != 0
+	C += RAND:21
+ELSE
+	C -= RAND:21
+	SIF C < 0
+		C = 0
+ENDIF
+
+CALL TRAIN_MESSAGE_B
+
+IF C > 60
+	S = 1
+	TFLAG:18 = 1
+	CALL COM74_CHAOS
+ELSE
+	SOURCE:達成感 += 7500
+ENDIF
+
+T += 1 + RAND:5
+
+PRINTS EXPNAME:93
+PRINTFORML +{T}
+EXP:歌唱経験 += T
+
+RETURN 1
+
+
+
+@COM74_FAIL
+;-------------------------------------------------
+;実行決定
+;-------------------------------------------------
+STR:0 = 公開野外ライブ
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+LOSEBASE:体力 += 500
+LOSEBASE:気力 += 500
+
+A = 1500
+B = 1000
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+;ABL:露出癖をみる
+IF ABL:露出癖 == 0
+	SOURCE:中毒充足 += 0
+	SOURCE:液体追加 += 0
+	TIMES A, 1.00
+ELSEIF ABL:露出癖 == 1
+	SOURCE:中毒充足 += 50
+	SOURCE:液体追加 += 50
+	TIMES A, 1.20
+ELSEIF ABL:露出癖 == 2
+	SOURCE:中毒充足 += 100
+	SOURCE:液体追加 += 100
+	TIMES A, 1.40
+ELSEIF ABL:露出癖 == 3
+	SOURCE:中毒充足 += 200
+	SOURCE:液体追加 += 200
+	TIMES A, 1.60
+ELSEIF ABL:露出癖 == 4
+	SOURCE:中毒充足 += 400
+	SOURCE:液体追加 += 400
+	TIMES A, 2.00
+ELSE
+	SOURCE:中毒充足 += 800
+	SOURCE:液体追加 += 800
+	TIMES A, 3.00
+ENDIF
+;ABL:歌唱技能をみる
+IF ABL:歌唱技能 == 0
+	TIMES A , 0.80
+ELSEIF ABL:歌唱技能 == 1
+	TIMES A , 1.00
+ELSEIF ABL:歌唱技能 == 2
+	TIMES A , 1.30
+ELSEIF ABL:歌唱技能 == 3
+	TIMES A , 1.60
+ELSEIF ABL:歌唱技能 == 4
+	TIMES A , 2.00
+ELSE
+	TIMES A , 3.00
+ENDIF
+
+;目立ちたがり
+SIF TALENT:目立ちたがり
+	TIMES A , 1.50
+
+;解放
+SIF TALENT:解放
+	TIMES A , 1.50
+
+;臆病
+SIF TALENT:臆病
+	TIMES B , 2.00
+
+;恥じらい
+SIF TALENT:恥じらい
+	TIMES B , 2.00
+;恥じ薄い
+SIF TALENT:恥薄い
+	TIMES B , 0.80
+
+SOURCE:露出 += A/2
+SOURCE:屈従 += A/4
+SOURCE:逸脱 += B
+
+UP:習得 += A/3
+UP:恥情 += A/4
+UP:恐怖 += SOURCE:逸脱/2
+
+C = RAND:5
+
+;TEQUIPごとにC加算し、レイプ派生判定や経験加算に使用する
+SIF TEQUIP:43
+	C += 10
+SIF TEQUIP:14
+	C += 13
+SIF TEQUIP:15 || TEQUIP:16
+	C += 15
+IF TEQUIP:11
+	C += 25
+ELSEIF TEQUIP:71
+	C += 29
+ENDIF
+IF TEQUIP:43
+	IF TEQUIP:46 || TEQUIP:47
+		C += 5
+	ELSEIF TEQUIP:48
+		C += 5
+	ELSEIF TEQUIP:70
+		C += 5
+	ELSEIF TEQUIP:79
+		C += 5
+	ENDIF
+	C += 20
+ENDIF
+IF TEQUIP:60
+	C += 20
+ELSEIF TEQUIP:76
+	C += 15
+ENDIF
+T = C/3
+S = 0
+
+CALL TRAIN_MESSAGE_B
+
+TFLAG:18 = 1
+CALL COM74_CHAOS
+
+T += 1 + RAND:3
+
+PRINTS EXPNAME:93
+PRINTFORML +{T}
+EXP:歌唱経験 += T
+
+RETURN 1
+
+@COM74_CHAOS
+A = 0
+B = 0
+C = 0
+V = 0
+
+D = 0
+E = 0
+F = 3 + RAND:5
+M = RAND:16
+N = 2 + RAND:9
+O = 0
+
+IF M > 6
+;Ａ感覚をみる
+	IF ABL:Ａ感覚 == 0
+		A = 40
+	ELSEIF ABL:Ａ感覚 == 1
+		A = 60
+	ELSEIF ABL:Ａ感覚 == 2
+		A = 90
+	ELSEIF ABL:Ａ感覚 == 3
+		A = 130
+	ELSEIF ABL:Ａ感覚 == 4
+		A = 180
+	ELSE
+		A = 240
+	ENDIF
+	D = 2 + RAND:5
+	A *= D
+ENDIF
+
+;Ｂ感覚をみる
+IF ABL:Ｂ感覚 == 0
+	B = 50
+ELSEIF ABL:Ｂ感覚 == 1
+	B = 80
+ELSEIF ABL:Ｂ感覚 == 2
+	B = 160
+ELSEIF ABL:Ｂ感覚 == 3
+	B = 240
+ELSEIF ABL:Ｂ感覚 == 4
+	B = 320
+ELSE
+	B = 480
+ENDIF
+B *= N
+
+;Ｃ感覚をみる
+IF ABL:Ｃ感覚 == 0
+	C = 100
+ELSEIF ABL:Ｃ感覚 == 1
+	C = 130
+ELSEIF ABL:Ｃ感覚 == 2
+	C = 170
+ELSEIF ABL:Ｃ感覚 == 3
+	C = 250
+ELSEIF ABL:Ｃ感覚 == 4
+	C = 360
+ELSE
+	C = 500
+ENDIF
+C *= N
+
+IF M < 10
+;V経験を伴うコマンドのフラグ(処女膜再生対応)
+	TFLAG:19 = 1
+;Ｖ感覚をみる
+	IF ABL:Ｖ感覚 == 0
+		V = 100
+	ELSEIF ABL:Ｖ感覚 == 1
+		V = 120
+	ELSEIF ABL:Ｖ感覚 == 2
+		V = 150
+	ELSEIF ABL:Ｖ感覚 == 3
+		V = 180
+	ELSEIF ABL:Ｖ感覚 == 4
+		V = 200
+	ELSE
+		V = 250
+	ENDIF
+	E = 2 + RAND:5
+	SIF TALENT:処女
+		V *= E
+ENDIF
+
+O = D+E+F+(N/2)
+
+CALL TRAIN_MESSAGE_B
+
+IF E > 0
+	EXP:Ｖ経験 += E
+	IF TALENT:処女 && EXP:Ｖ経験 == 0
+		EXP:異常経験 += 3
+		PRINTFORML 異常経験＋3
+	ENDIF
+	PRINTFORML Ｖ経験＋{E}
+	STAIN:ヴァギナ |= 2
+	STAIN:ヴァギナ |= 4
+ENDIF
+IF D > 0
+	EXP:Ａ経験 += D
+	PRINTFORML Ａ経験＋{D}
+	STAIN:アナル |= 2
+	STAIN:アナル |= 4
+ENDIF
+EXP:フェラ経験 += F
+PRINTFORML フェラ経験＋{F}
+SOURCE:痛み += 150 * N
+SOURCE:逸脱 += 150 * N
+SOURCE:恭順追加 += 150 * N
+SOURCE:性行動 += 310 * N
+SOURCE:達成感 += 370 * N
+STAIN:口 |= 2
+STAIN:口 |= 4
+IF (D+E+F)/2 > 0
+	EXP:精液経験 += (D+E+F)/2
+	PRINTFORML 精液経験＋{(D+E+F)/2}
+ENDIF
+SOURCE:快Ｃ += C
+SOURCE:快Ｖ += V
+SOURCE:快Ａ += A
+SOURCE:快Ｂ += B
+SOURCE:屈従 += 750 * O
+UP:恐怖 += 330 * O
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM74
+;レイプ派生の場合はレイプ時の地の文を表示してRETURNする
+IF TFLAG:18 == 1
+	IF S == 1
+		PRINTFORML %CALLNAME:TARGET%の魅力と歌声に魅せられたのか
+		PRINTFORMW 興奮した聴衆達が一斉に%CALLNAME:TARGET%のもとへなだれ込んだ……
+	ELSE
+		PRINTFORMW 何のスイッチが入ったのか突然聴衆達は%CALLNAME:TARGET%に向かってなだれ込んだ……
+	ENDIF
+	PRINTL           ･
+	PRINTL           ･
+	PRINTL           ･
+	PRINTFORM %CALLNAME:TARGET%は群がった聴衆に
+	SIF E > 0
+		PRINTFORM ヴァギナを{E}回
+	SIF D > 0
+		PRINTFORM 、アヌスを{D}回
+	PRINTFORM 、口を{F}回
+	PRINTW 犯されてしまった……
+	PRINTL 
+	PRINTL 
+	RETURN 0
+ENDIF
+
+PRINTFORM %CALLNAME:TARGET%は
+SIF TEQUIP:43
+	PRINT アイマスクを被ったまま
+IF TEQUIP:14
+	PRINT クリキャップ
+	IF TEQUIP:15 || TEQUIP:16
+		PRINT と、
+	ELSE
+		PRINT を着けて
+	ENDIF
+ENDIF
+IF TEQUIP:15 || TEQUIP:16
+	IF TEQUIP:15
+		PRINT 二プルキャップ
+	ELSEIF TEQUIP:16
+		PRINT 搾乳機
+	ENDIF
+	PRINT を着けて
+ENDIF
+IF TEQUIP:11 || TEQUIP:71
+	PRINT 秘唇には
+	IF TEQUIP:11
+		PRINT バイブ
+	ELSEIF TEQUIP:71
+		PRINT 焼芋
+	ENDIF
+	IF TEQUIP:60 || TEQUIP:76
+		PRINT が深々と咥えこまれ、
+	ELSE
+		PRINT を咥えたまま
+	ENDIF
+ENDIF
+IF TEQUIP:43
+	PRINT お尻の穴には
+	IF TEQUIP:13
+		PRINT アナルバイブ
+	ELSEIF TEQUIP:19
+		PRINT ビーズ
+	ELSEIF TEQUIP:46 || TEQUIP:47
+		PRINT プラグ
+	ELSEIF TEQUIP:48
+		PRINT バルーン
+	ELSEIF TEQUIP:49
+		PRINT 電極
+	ELSEIF TEQUIP:70
+		PRINT 巨峰
+	ELSEIF TEQUIP:79
+		PRINT 氷柱
+	ENDIF
+	IF TEQUIP:60 || TEQUIP:76
+		PRINT を飲み込まされ、さらには
+	ELSE
+		PRINT を飲み込んだまま
+	ENDIF
+ENDIF
+IF TEQUIP:60
+	PRINT スクール水着を着た状態で
+ELSEIF TEQUIP:76
+	PRINT サラシを着た状態で
+ENDIF
+PRINTFORML 聴衆の前で歌った
+
+PRINTL 　
+PRINTW   「♪～」
+PRINTW  「♪♪～」
+PRINTW 「♪～♪～」
+PRINTW 「…………」
+PRINTW ………………
+PRINTL 　
+
+IF TFLAG:18 == -1
+	PRINTFORML %CALLNAME:TARGET%は恥ずかしさのためか、それとも緊張したせいか
+	PRINTFORMW 歌っている最中にもかかわらず完全に凍りついてしまった……
+ELSE
+	IF C > 60
+		PRINTFORMW 聴衆は%CALLNAME:TARGET%の歌に聴き惚れている
+	ELSE
+		PRINTFORMW 歌い終わった%CALLNAME:TARGET%に盛大な拍手が送られた
+	ENDIF
+ENDIF

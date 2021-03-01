@@ -1,0 +1,115 @@
+﻿@COM45
+;ボールギャグ
+PRINTL ボールギャグ
+STR:0 = ボールギャグ
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+;緊縛経験が高いと消費減少
+IF EXP:緊縛経験 < EXPLV:3
+	LOSEBASE:体力 += 80
+	LOSEBASE:気力 += 100
+ELSEIF EXP:緊縛経験 < EXPLV:4
+	LOSEBASE:体力 += 60
+	LOSEBASE:気力 += 80
+ELSE
+	LOSEBASE:体力 += 40
+	LOSEBASE:気力 += 60
+ENDIF
+
+SOURCE:痛み = 50
+SOURCE:中毒充足 = 50
+SOURCE:露出 = 80
+SOURCE:屈従 = 150
+SOURCE:逸脱 = 80
+SOURCE:恭順追加 = 80
+
+EXP:緊縛経験 += 2
+PRINTL 緊縛経験＋２
+
+CALL TRAIN_MESSAGE_B
+
+;ボールギャグの着脱
+IF TEQUIP:45
+	TEQUIP:45 = 0
+ELSE
+	TEQUIP:45 = 1
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM45
+;ボールギャグの着脱
+IF TEQUIP:45
+	PRINTFORML %CALLNAME:TARGET%からボールギャグを取ってあげた
+ELSE
+	PRINTFORML %CALLNAME:TARGET%にボールギャグを嵌めさせた
+ENDIF
+
+@EQUIP_COM45
+;ボールギャグ装備中
+PRINTL ＜ボールギャグ装備中＞
+
+;緊縛経験が高いと消費減少
+IF EXP:緊縛経験 < EXPLV:3
+	LOSEBASE:体力 += 50
+	LOSEBASE:気力 += 100
+ELSEIF EXP:緊縛経験 < EXPLV:4
+	LOSEBASE:体力 += 40
+	LOSEBASE:気力 += 80
+ELSE
+	LOSEBASE:体力 += 30
+	LOSEBASE:気力 += 60
+ENDIF
+
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	A = 40
+ELSEIF ABL:マゾっ気 == 1
+	A = 120
+ELSEIF ABL:マゾっ気 == 2
+	A = 250
+ELSEIF ABL:マゾっ気 == 3
+	A = 450
+ELSEIF ABL:マゾっ気 == 4
+	A = 600
+ELSE
+	A = 375 + (ABL:マゾっ気 * 75)
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+
+SOURCE:露出 += A
+SOURCE:屈従 += A
+SOURCE:逸脱 += A
+SOURCE:恭順追加 += A
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+	EXP:PLAYER:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+	EXP:PLAYER:ＢＬ経験 += 1
+ENDIF
+
+EXP:緊縛経験 += 1
+PRINTL 緊縛経験＋１
+
+EXP:異常経験 += 1
+PRINTFORML %EXPNAME:50%＋１

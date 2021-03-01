@@ -1,0 +1,103 @@
+﻿@COM_ABLE166
+;角愛撫実行判定
+;COM_ABLE共通判定
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;ウフフ中じゃないと無理
+SIF TFLAG:44 == 0
+	RETURN 0
+;調教対象に角がないとダメ
+SIF TALENT:角 == 0
+	RETURN 0
+;触手調教中はダメ
+SIF TEQUIP:90
+	RETURN 0
+;caved!!!!が発動しているとダメ
+SIF TFLAG:69 > 0
+	RETURN 0
+RETURN 1
+
+@COM166
+;角愛撫
+
+;調教対象が緊縛していない反発感情3のキモけーねだった場合、逆襲される可能性大
+IF NAME_CSV(NO:TARGET, 0) == "慧音" && TEQUIP:1 && MARK:反発感情 >= 3 && TEQUIP:44 == 0
+	IF RAND:4 > 0 && TFLAG:69 == 0
+		TFLAG:69 = 1
+		JUMP CAVED
+	ENDIF
+ENDIF
+
+PRINTL 角愛撫
+STR:0 = 角愛撫
+CALL TRAIN_MESSAGE_B
+
+LOSEBASE:体力 += 15
+LOSEBASE:気力 += 80
+
+SOURCE:逸脱 = 400
+
+;ABL:欲望をみる
+IF ABL:欲望 == 0
+	SOURCE:中毒充足 = 50
+	SOURCE:屈従 = 50
+ELSEIF ABL:欲望 == 1
+	SOURCE:中毒充足 = 100
+	SOURCE:屈従 = 100
+ELSEIF ABL:欲望 == 2
+	SOURCE:中毒充足 = 250
+	SOURCE:屈従 = 200
+ELSEIF ABL:欲望 == 3
+	SOURCE:中毒充足 = 500
+	SOURCE:屈従 = 400
+ELSEIF ABL:欲望 == 4
+	SOURCE:中毒充足 = 1000
+	SOURCE:屈従 = 800
+ELSE
+	SOURCE:中毒充足 = 2000
+	SOURCE:屈従 = 1600
+ENDIF
+
+;ABL:露出癖をみる
+IF ABL:露出癖 == 0
+	SOURCE:露出 = 50
+ELSEIF ABL:露出癖 == 1
+	SOURCE:露出 = 100
+ELSEIF ABL:露出癖 == 2
+	SOURCE:露出 = 200
+ELSEIF ABL:露出癖 == 3
+	SOURCE:露出 = 600
+ELSEIF ABL:露出癖 == 4
+	SOURCE:露出 = 1000
+ELSE
+	SOURCE:露出 = 1500
+ENDIF
+
+IF STAIN:PLAYER:口
+;主人の口の汚れがあると不潔追加
+	SOURCE:不潔 = 300
+	;汚臭鈍感
+	SIF TALENT:汚臭鈍感
+		SOURCE:不潔 /= 4
+	;汚臭敏感
+	SIF TALENT:汚臭敏感
+		SOURCE:不潔 *= 3
+ENDIF
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +5
+	EXP:レズ経験 += 5
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +5
+	EXP:ＢＬ経験 += 5
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM166
+PRINTFORML %CALLNAME:PLAYER%は%CALLNAME:TARGET%の角をキスしたり、撫でまわし始めた
+PRINTFORML %CALLNAME:TARGET%は角に与えられる刺激に困惑した表情を浮かべている……
+

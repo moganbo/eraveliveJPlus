@@ -1,0 +1,187 @@
+﻿@COM85
+;放尿
+
+;おもらし癖なしでも、従順４以上欲望３以上、マゾっ気３以上は
+SIF TALENT:おもらし癖 == 0 && ABL:親密 >= 4 && ABL:欲望 >= 3 && ABL:マゾっ気 >= 3
+	JUMP COM86
+;おもらし癖ありで利尿剤が無い
+SIF TALENT:おもらし癖 && TEQUIP:22 == 0
+	JUMP COM86
+
+PRINTL 放尿
+STR:0 = 放尿
+CALL TRAIN_MESSAGE_B
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+LOSEBASE:体力 += 10
+LOSEBASE:気力 += 200
+
+SOURCE:逸脱 = 5000
+SOURCE:達成感 = 3000
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	SOURCE:露出 = 1800
+ELSEIF PALAM:欲情 < PALAMLV:2
+	SOURCE:露出 = 1900
+ELSEIF PALAM:欲情 < PALAMLV:3
+	SOURCE:露出 = 2000
+ELSEIF PALAM:欲情 < PALAMLV:4
+	SOURCE:露出 = 2100
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	SOURCE:露出 = 2200
+ENDIF
+
+;露出癖をみる
+IF ABL:露出癖 == 0
+	SOURCE:屈従 = 6000
+ELSEIF ABL:露出癖 == 1
+	SOURCE:屈従 = 5000
+ELSEIF ABL:露出癖 == 2
+	SOURCE:屈従 = 4000
+ELSEIF ABL:露出癖 == 3
+	SOURCE:屈従 = 3000
+ELSEIF ABL:露出癖 == 4
+	SOURCE:屈従 = 2000
+ELSE
+	SOURCE:屈従 = 1000
+ENDIF
+
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	TIMES SOURCE:情愛 , 0.80
+	TIMES SOURCE:露出 , 0.80
+	SOURCE:液体追加 = 100
+	SOURCE:欲情追加 = 100
+ELSEIF ABL:マゾっ気 == 1
+	TIMES SOURCE:情愛 , 1.00
+	TIMES SOURCE:露出 , 1.00
+	SOURCE:液体追加 = 200
+	SOURCE:欲情追加 = 300
+ELSEIF ABL:マゾっ気 == 2
+	TIMES SOURCE:情愛 , 1.30
+	TIMES SOURCE:露出 , 1.20
+	SOURCE:液体追加 = 400
+	SOURCE:欲情追加 = 700
+ELSEIF ABL:マゾっ気 == 3
+	TIMES SOURCE:情愛 , 1.40
+	TIMES SOURCE:露出 , 1.40
+	SOURCE:液体追加 = 700
+	SOURCE:欲情追加 = 1200
+ELSEIF ABL:マゾっ気 == 4
+	TIMES SOURCE:情愛 , 1.70
+	TIMES SOURCE:露出 , 1.50
+	SOURCE:液体追加 = 1100
+	SOURCE:欲情追加 = 1800
+ELSE
+	SOURCE:情愛 = SOURCE:情愛 * (ABL:マゾっ気 * 15 + 125) / 100
+	SOURCE:露出 = SOURCE:露出 * (ABL:マゾっ気 * 10 + 120) / 100
+	SOURCE:液体追加 = 500 + (ABL:マゾっ気 * 200)
+	SOURCE:欲情追加 = 750 + (ABL:マゾっ気 * 350)
+ENDIF
+
+;場所をみる
+IF TEQUIP:54
+	TIMES SOURCE:逸脱 , 2.50
+ELSEIF TEQUIP:57
+	TIMES SOURCE:逸脱 , 1.50
+ELSEIF TEQUIP:58
+	TIMES SOURCE:逸脱 , 0.50
+ENDIF
+
+
+	A = 100
+	IF EXP:放尿経験 < EXPLV:1
+		TIMES A , 3.00
+	ELSEIF EXP:放尿経験 < EXPLV:2
+		TIMES A , 2.50
+	ELSEIF EXP:放尿経験 < EXPLV:3
+		TIMES A , 2.00
+	ELSEIF EXP:放尿経験 < EXPLV:4
+		TIMES A , 1.00
+	ELSEIF EXP:放尿経験 < EXPLV:5
+		TIMES A , 0.80
+	ELSE
+		TIMES A , 0.60
+	ENDIF
+
+	;臆病
+	SIF TALENT:臆病
+		TIMES A , 1.20
+
+	;反抗的
+	SIF TALENT:反抗的
+		TIMES A , 2.00
+
+	;プライド高い
+	SIF TALENT:プライド高い
+		TIMES A , 2.00
+
+	;プライド低い
+	SIF TALENT:プライド低い
+		TIMES A , 0.80
+
+	;自制心
+	SIF TALENT:自制心
+		TIMES A , 1.50
+
+	;感情乏しい
+	SIF TALENT:感情乏しい
+		TIMES A , 0.60
+
+	;目立ちたがり
+	SIF TALENT:目立ちたがり
+		TIMES A , 0.80
+
+	;抑圧
+	SIF TALENT:抑圧
+		TIMES A , 3.00
+
+	;抵抗
+	SIF TALENT:抵抗
+		TIMES A , 3.00
+
+	;恥じらい
+	SIF TALENT:恥じらい
+		TIMES A , 3.50
+
+	;恥薄い
+	SIF TALENT:恥薄い
+		TIMES A , 0.50
+
+	UP:恐怖 += A * 3
+	UP:反感 += A * 2
+	SOURCE:逸脱 += A * 5
+
+;焼き芋弁当パッチ専用イベント(黄金水入手)
+;CALL SWEET_POTATO_GW
+
+PRINTFORML %EXPNAME:31%＋２
+EXP:放尿経験 += 2
+
+;既成事実２に相当
+TFLAG:200 = 2
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+ENDIF
+
+SIF TEQUIP:90
+	T += 1
+
+SIF PALAM:欲情 >= PALAMLV:3
+	TFLAG:200 = 1
+
+IF TEQUIP:22
+	TEQUIP:22 = 0
+ENDIF
+
+RETURN 1

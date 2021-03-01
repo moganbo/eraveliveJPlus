@@ -1,0 +1,324 @@
+﻿@COM_ABLE380
+;着衣フェラする
+;COM_ABLE共通判定
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;助手では無理
+SIF ASSIPLAY
+	RETURN 0
+;パートナーが半人半妖かふたなりかオトコじゃないと無理
+SIF TALENT:半人半妖 == 0 && TALENT:ふたなり == 0 && TALENT:オトコ == 0
+	RETURN 0
+;実行者が[猫舌]だと技巧8以上じゃないと無理
+SIF ABL:PLAYER:技巧 < 8 && TALENT:PLAYER:猫舌
+	RETURN 0
+;ウフフ中は無理
+SIF TFLAG:44 == 1
+	RETURN 0
+;デート中は淫乱じゃないと無理(ポルノ映画を除く)
+SIF (TEQUIP:2 && (TEQUIP:2 == 22) == 0) && TALENT:淫乱 == 0
+	RETURN 0
+;オムツ着用中は無理
+SIF TEQUIP:20
+	RETURN 0
+;欲情10000以上が必要
+SIF PALAM:欲情 < PALAMLV:4
+	RETURN 0
+;欲望10以上or露出癖2以上が必要
+SIF ABL:欲望 < 10 && ABL:露出癖 < 2
+	RETURN 0
+;親密12以上or好感度10000以上が必要
+SIF ABL:親密 < 12 && CFLAG:2 < 10000
+	RETURN 0
+;貞操無頓着か快感に素直か倒錯的かつ恋慕か、淫乱か親愛か相愛が必要
+SIF ((TALENT:貞操無頓着 == 0 && TALENT:快感に素直 == 0 && TALENT:倒錯的 == 0) || TALENT:恋慕== 0) && TALENT:淫乱 == 0 && TALENT:親愛 == 0 && TALENT:相愛 == 0
+	RETURN 0
+;ムードか酒の勢いが必要
+SIF TFLAG:37 < 35 && TFLAG:47 < 27
+	RETURN 0
+RETURN 1
+
+@COM380
+;着衣フェラする
+PRINTL フェラする
+STR:0 = フェラする
+CALL TRAIN_MESSAGE_B
+
+LOSEBASE:体力 += 50
+LOSEBASE:気力 += 180
+
+SOURCE:情愛 = 800
+SOURCE:達成感 = 800
+SOURCE:露出 = 500
+SOURCE:逸脱 = 150
+
+;ABL:Ｃ感覚をみる
+IF ABL:Ｃ感覚 == 0
+	SOURCE:快Ｃ = 800
+	SOURCE:中毒充足 = 600
+ELSEIF ABL:Ｃ感覚 == 1
+	SOURCE:快Ｃ = 1300
+	SOURCE:中毒充足 = 700
+ELSEIF ABL:Ｃ感覚 == 2
+	SOURCE:快Ｃ = 1800
+	SOURCE:中毒充足 = 1100
+ELSEIF ABL:Ｃ感覚 == 3
+	SOURCE:快Ｃ = 2500
+	SOURCE:中毒充足 = 1500
+ELSEIF ABL:Ｃ感覚 == 4
+	SOURCE:快Ｃ = 3000
+	SOURCE:中毒充足 = 2000
+ELSE
+	SOURCE:快Ｃ = 1400 + ABL:Ｃ感覚 * 450
+	SOURCE:中毒充足 = 2600
+ENDIF
+
+;奴隷のＰ⇔調教者の口の汚れが移動
+STAIN:ペニス |= STAIN:PLAYER:口
+STAIN:PLAYER:口 |= STAIN:ペニス
+
+;デート中は
+IF TEQUIP:2 > 0
+	;ポルノ映画以外は
+	IF TEQUIP:2 != 22
+		;逸脱追加
+		SOURCE:逸脱 += 3000
+		;さらに露出追加
+		SOURCE:露出 += 4000
+		;さらに異常経験追加
+		EXP:異常経験 += 2
+		PRINTL 異常経験＋2
+	ELSE
+	;ポルノ映画は
+		;逸脱追加
+		SOURCE:逸脱 += 1500
+		;さらに露出追加
+		SOURCE:露出 += 2000
+		;さらに異常経験追加
+		EXP:異常経験 += 1
+		PRINTL 異常経験＋1
+	ENDIF
+ENDIF
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+	EXP:PLAYER:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+	EXP:PLAYER:ＢＬ経験 += 1
+ENDIF
+
+;プレイヤーのABL:技巧をみる
+IF ABL:PLAYER:技巧 == 0
+	TIMES SOURCE:快Ｃ , 0.50
+	TIMES SOURCE:中毒充足 , 0.50
+ELSEIF ABL:PLAYER:技巧 == 1
+	TIMES SOURCE:快Ｃ , 0.80
+	TIMES SOURCE:中毒充足 , 0.80
+ELSEIF ABL:PLAYER:技巧 == 2
+	TIMES SOURCE:快Ｃ , 1.00
+	TIMES SOURCE:中毒充足 , 1.00
+ELSEIF ABL:PLAYER:技巧 == 3
+	TIMES SOURCE:快Ｃ , 1.20
+	TIMES SOURCE:中毒充足 , 1.50
+ELSEIF ABL:PLAYER:技巧 == 4
+	TIMES SOURCE:快Ｃ , 1.50
+	TIMES SOURCE:中毒充足 , 2.50
+ELSE
+	SOURCE:快Ｃ = SOURCE:快Ｃ * (ABL:PLAYER:技巧 * 75 + 25) / 200
+	SOURCE:中毒充足 = SOURCE:中毒充足 * (ABL:PLAYER:技巧 * 75 + 25) / 100
+ENDIF
+
+;ABL:奉仕精神をみる
+IF ABL:PLAYER:奉仕精神 == 0
+	TIMES SOURCE:情愛 , 0.60
+;	TIMES SOURCE:中毒充足 , 0.60
+ELSEIF ABL:PLAYER:奉仕精神 == 1
+	TIMES SOURCE:情愛 , 0.80
+;	TIMES SOURCE:中毒充足 , 0.80
+ELSEIF ABL:PLAYER:奉仕精神 == 2
+	TIMES SOURCE:情愛 , 1.00
+;	TIMES SOURCE:中毒充足 , 1.00
+ELSEIF ABL:PLAYER:奉仕精神 == 3
+	TIMES SOURCE:情愛 , 1.50
+;	TIMES SOURCE:中毒充足 , 1.50
+ELSEIF ABL:PLAYER:奉仕精神 == 4
+	TIMES SOURCE:情愛 , 2.50
+;	TIMES SOURCE:中毒充足 , 2.50
+ELSE
+	SOURCE:情愛 = SOURCE:情愛 * (ABL:PLAYER:技巧 * 75 + 25) / 100
+;	SOURCE:中毒充足 = SOURCE:中毒充足 * (ABL:PLAYER:技巧 * 75 + 25) / 100
+ENDIF
+
+;主導権をチェック
+IF TFLAG:45 == 0
+	;主導権が主人公側
+	;ABL:従順をみる
+	IF ABL:親密 <= 1
+		SOURCE:受動 += 300 + (ABL:親密 * 50)
+	ELSEIF ABL:親密 <= 3
+		SOURCE:受動 += 600 + (ABL:親密 * 100)
+	ELSEIF ABL:親密 <= 5
+		SOURCE:受動 += 800 + (ABL:親密 * 120)
+	ELSEIF ABL:親密 <= 8
+		SOURCE:受動 += 1000 + (ABL:親密 * 140)
+	ELSEIF ABL:親密 <= 11
+		SOURCE:受動 += 1200 + (ABL:親密 * 160)
+	ELSE
+		SOURCE:受動 += 1500 + (ABL:親密 * 180)
+	ENDIF
+ELSE
+	;主導権が相手側
+	;ABL:サドっ気をみる
+	IF ABL:サドっ気 == 0
+		SOURCE:征服 = 600
+	ELSEIF ABL:サドっ気 == 1
+		SOURCE:征服 = 900
+	ELSEIF ABL:サドっ気 == 2
+		SOURCE:征服 = 1200
+	ELSEIF ABL:サドっ気 == 3
+		SOURCE:征服 = 1600
+	ELSEIF ABL:サドっ気 == 4
+		SOURCE:征服 = 2000
+	ELSE
+		SOURCE:征服 = 1000 + (ABL:サドっ気 * 300)
+	ENDIF
+ENDIF
+
+;好感度ランダム変化
+A = RAND:10 + 5
+;合意がないと好感度が下がる
+IF TALENT:合意 == 0 && TFLAG:48 == 0
+	A -= 9
+	SOURCE:反感追加 += 400
+ENDIF
+TFLAG:30 += A
+TFLAG:37 += A / 2
+
+
+
+RETURN 1
+
+;着衣フェラする
+@TRAIN_MESSAGE_COM380
+;主導権で分岐
+IF TFLAG:45
+	PRINTFORM %CALLNAME:TARGET%が
+	;デート中
+	IF TEQUIP:2 > 0 && (TEQUIP:2 != 6)
+		;淫乱かつC感覚8以上
+		IF TALENT:淫乱 && (ABL:Ｃ感覚 >= 8)
+			;保守的又は貞操観念又は恥じらい
+			IF TALENT:保守的 || TALENT:貞操観念 || TALENT:恥じらい
+				PRINT 辺りを入念に確認してから
+			;目立ちたがり又は解放又は恥薄い又は中毒しやすい又は倒錯的
+			ELSEIF TALENT:目立ちたがり || TALENT:解放 || TALENT:恥薄い || TALENT:中毒しやすい || TALENT:倒錯的
+				PRINT 周囲を気にする事なく
+			ENDIF
+		ELSE
+			PRINT 辺りを入念に確認してから
+		ENDIF
+	ENDIF
+	;淫乱かつC感覚10以上かつ欲情3000万以上
+	IF TALENT:淫乱 && (ABL:Ｃ感覚 >= 10) && (PALAM:欲情 >= 30000000)
+		PRINTFORML 待ちきれない様子で%CALLNAME:PLAYER%の前にペニスを露出させると
+	ELSE
+		PRINTFORML %CALLNAME:PLAYER%の前にペニスを露出させると
+	ENDIF
+	
+	PRINTFORM %CALLNAME:PLAYER%は
+	
+	
+	;淫乱又は精液中毒7以上
+	IF (TALENT:PLAYER:淫乱 || ABL:PLAYER:精液中毒 >= 7)
+		PRINT 発情した雌の顔で、
+	;淫乱又は精液中毒5以上
+	ELSEIF (TALENT:PLAYER:淫乱 || ABL:PLAYER:精液中毒 >= 5)
+		PRINT うっとりとした表情で、
+	;サド又は小悪魔又はサドっ気5以上
+	ELSEIF TALENT:PLAYER:サド || TALENT:PLAYER:小悪魔 || ABL:PLAYER:サドっ気 >= 5
+		PRINTFORML 妖しげな瞳で%CALLNAME:TARGET%を見つめながら
+	;マゾ又は、臆病かつマゾっ気3以上、又はマゾっ気5以上
+	ELSEIF TALENT:PLAYER:マゾ || (TALENT:PLAYER:臆病 && ABL:PLAYER:マゾっ気 >= 3) || ABL:PLAYER:マゾっ気 >= 5
+		PRINTFORML 媚びるような上目遣いで%CALLNAME:TARGET%を見つめながら
+	;恥じらい
+	ELSEIF TALENT:PLAYER:恥じらい
+		PRINT 一瞬躊躇うような仕草を見せがらも、
+	ELSE
+	ENDIF
+	;キス魔
+	SIF TALENT:PLAYER:キス魔
+		PRINT 先端に一度キスをしてから、
+	;猫舌
+	IF TALENT:PLAYER:猫舌
+		PRINT 舌の裏側を使って丁寧に舐め回した…
+	;精液中毒5以上
+	ELSEIF ABL:PLAYER:精液中毒 >= 5
+		PRINTL 夢中でしゃぶりついた…
+	;技巧12以上
+	ELSEIF ABL:PLAYER:技巧 >= 12
+		PRINT カリの裏側をなぞるように舌を這わせた…
+	ELSEIF TALENT:PLAYER:幼児
+		PRINT 氷菓のように舐め回した…
+	ELSE
+		PRINT ゆっくりと舌を這わせた…
+	ENDIF
+ELSE
+	PRINTFORM %CALLNAME:PLAYER%は
+	;淫乱かつC感覚10以上かつ欲情3000万以上
+	IF TALENT:淫乱 && ( ABL:Ｃ感覚 >= 10) && (PALAM:欲情 >= 30000000)
+		PRINT 甘えておねだりする
+	;淫乱又はC感覚6以上
+	ELSEIF TALENT:淫乱 || ABL:Ｃ感覚 >= 6
+		PRINT 待ち切れない様子の
+	ELSE
+	ENDIF
+	PRINTFORM %CALLNAME:TARGET%のペニスを
+	;技巧10以上
+	SIF ABL:PLAYER:技巧 >= 10
+		PRINT 口を使って器用に
+	PRINTL 露出させると
+
+	;キス魔
+	SIF TALENT:PLAYER:キス魔
+		PRINT 先端に一度キスをしてから、
+	;淫乱又は精液中毒7以上
+	IF (TALENT:PLAYER:淫乱 || ABL:PLAYER:精液中毒 >= 7)
+		PRINT 呼吸も荒く、余裕の無い表情で
+	;淫乱又は精液中毒5以上
+	ELSEIF (TALENT:PLAYER:淫乱 || ABL:PLAYER:精液中毒 >= 5)
+		PRINT 上気した表情で、
+	;サド又は小悪魔又はサドっ気5以上
+	ELSEIF TALENT:PLAYER:サド || TALENT:PLAYER:小悪魔 || ABL:PLAYER:サドっ気 >= 5
+		PRINT 意地悪な笑みを浮かべながら
+	;マゾ又は、臆病かつマゾっ気3以上、又はマゾっ気5以上
+	ELSEIF TALENT:PLAYER:マゾ || (TALENT:PLAYER:臆病 && ABL:PLAYER:マゾっ気 >= 3) || ABL:PLAYER:マゾっ気 >= 5
+		PRINTFORML 媚びるような上目遣いで%CALLNAME:TARGET%を見つめながら
+	;恥じらい
+	ELSEIF TALENT:PLAYER:恥じらい
+		PRINT 頬を紅潮させながらも、
+	ELSE
+	ENDIF
+	;猫舌
+	IF TALENT:PLAYER:猫舌
+		PRINT 舌の裏側を使って丁寧に舐め回した…
+;		;精液中毒5以上
+	ELSEIF ABL:PLAYER:精液中毒 >= 5
+		PRINTL 貪るようにしゃぶりついた…
+	;技巧12以上
+	ELSEIF ABL:PLAYER:技巧 >= 12
+		PRINTL 時折鈴口に舌先をねじ込むような仕草をしつつ
+		PRINT 丹念に刺激した…
+	ELSEIF TALENT:PLAYER:幼児
+		PRINT 飴玉を転がすように舐め回した…
+	ELSE
+		PRINT じっくりと舌を這わせた…
+	ENDIF
+	PRINTW 
+ENDIF
+

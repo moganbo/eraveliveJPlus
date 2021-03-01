@@ -1,0 +1,243 @@
+﻿@COM_ABLE202
+;わかめ酒実行判定
+;COM_ABLE共通判定
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;ウフフ中じゃないと無理
+SIF TFLAG:44 == 0
+	RETURN 0
+;酒をプレゼントされた経験がないとダメ
+SIF TFLAG:92 == 0
+	RETURN 0
+;性器が汚れているとMASTERの場合クンニはできない（調教者が汚れ無視か愛液、母乳のよごれならＯＫ）
+SIF STAIN:ヴァギナ & 14 && ASSIPLAY == 0 && TALENT:MASTER:汚れ無視 == 0
+	RETURN 0
+;性器が汚れており、汚臭敏感で親密3以下のASSIの場合クンニはできない（調教者が汚れ無視か愛液、母乳のよごれならＯＫ）
+IF STAIN:ヴァギナ & 14 && ASSIPLAY
+	SIF ABL:ASSI:親密 <= 3 && TALENT:ASSI:汚臭敏感 && TALENT:ASSI:汚れ無視 == 0
+		RETURN 0
+ENDIF
+;欲望5以上かつ、親密7以上or好感度700以上or恋人or恋慕が必要
+SIF ABL:欲望 < 5 || (ABL:親密 < 7 && CFLAG:2 < 700 && TALENT:恋人 == 0 && TALENT:恋慕 == 0)
+	RETURN 0
+;小柄体型の場合、巨乳以外だとダメ
+SIF TALENT:小柄体型 && TALENT:巨乳 == 0
+	RETURN 0
+;オトコだとダメ
+SIF TALENT:オトコ
+	RETURN 0
+;バイブまたは焼芋挿入中のときは技巧が4以上ないとダメ
+SIF (TEQUIP:11 || TEQUIP:71) && ABL:PLAYER:技巧 < 4
+	RETURN 0
+;縄で緊縛中はダメ
+SIF TEQUIP:44
+	RETURN 0
+;クスコ装着中はダメ
+SIF TEQUIP:61
+	RETURN 0
+;触手調教中はダメ
+SIF TEQUIP:90
+	RETURN 0
+;お風呂場プレイ中はプレイマットが無いとダメ
+IF TEQUIP:58
+	SIF ITEM:プレイマット == 0 && NOITEM == 0
+		RETURN 0
+ENDIF
+RETURN 1
+
+@COM202
+
+;ワカメ酒（全キャラ対応改変版）
+
+PRINTL ワカメ酒
+STR:0 = ワカメ酒
+SIF TALENT:巨乳 || (STAIN:胸 & 14 && TALENT:PLAYER:汚れ無視)
+	PRINTL [0] 胸で
+PRINTL [1] 正座させて
+PRINTL [2] 仰向けで
+$INPUT_LOOP
+INPUT
+W = RESULT
+IF (W < 0 || W > 2) || (W == 0 && TALENT:巨乳 == 0) || (W == 0 && STAIN:胸 & 14 && TALENT:PLAYER:汚れ無視 == 0)
+	PRINTL 正しい値を入力してください
+	GOTO INPUT_LOOP
+ENDIF
+CALL TRAIN_MESSAGE_B
+
+
+LOSEBASE:体力 += 20
+LOSEBASE:気力 += 70
+
+;欲情
+SOURCE:欲情追加 = 1000
+;露出
+SOURCE:露出 = 500
+;屈服
+SOURCE:屈従 = 500
+;逸脱
+SOURCE:逸脱 = 800
+
+IF W == 0
+	;胸の場合液体が減る
+	SOURCE:液体追加 = 900
+	;ABL:Ｂ感覚をみる
+	IF ABL:Ｂ感覚 == 0
+		SOURCE:快Ｂ = 70
+	ELSEIF ABL:Ｂ感覚 == 1
+		SOURCE:快Ｂ = 180
+	ELSEIF ABL:Ｂ感覚 == 2
+		SOURCE:快Ｂ = 750
+	ELSEIF ABL:Ｂ感覚 == 3
+		SOURCE:快Ｂ = 1600
+	ELSEIF ABL:Ｂ感覚 == 4
+		SOURCE:快Ｂ = 2800
+	ELSE
+		SOURCE:快Ｂ = 900 + (ABL:Ｂ感覚 * 450)
+	ENDIF
+	
+	;Ｂ敏感、鈍感をみる
+	IF TALENT:Ｂ鈍感
+		TIMES SOURCE:快Ｂ , 0.50
+		TIMES SOURCE:液体追加 , 0.40
+	ELSEIF TALENT:Ｂ敏感
+		TIMES SOURCE:快Ｂ , 1.40
+		TIMES SOURCE:液体追加 , 1.20
+	ENDIF
+ELSE
+	SOURCE:液体追加 = 2000
+	;ABL:Ｃ感覚をみる
+	IF ABL:Ｃ感覚 == 0
+		SOURCE:快Ｃ = 100
+	ELSEIF ABL:Ｃ感覚 == 1
+		SOURCE:快Ｃ = 180
+	ELSEIF ABL:Ｃ感覚 == 2
+		SOURCE:快Ｃ = 750
+	ELSEIF ABL:Ｃ感覚 == 3
+		SOURCE:快Ｃ = 1600
+	ELSEIF ABL:Ｃ感覚 == 4
+		SOURCE:快Ｃ = 2600
+	ELSE
+		SOURCE:快Ｃ = 1000 + (ABL:Ｃ感覚 * 470)
+	ENDIF
+	
+	;Ｃ敏感、鈍感をみる
+	IF TALENT:Ｃ鈍感
+		TIMES SOURCE:快Ｃ , 0.60
+		TIMES SOURCE:液体追加 , 0.50
+	ELSEIF TALENT:Ｃ敏感
+		TIMES SOURCE:快Ｃ , 1.50
+		TIMES SOURCE:液体追加 , 1.20
+	ENDIF
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES SOURCE:欲情追加, 0.30
+	TIMES SOURCE:屈従, 0.30
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES SOURCE:欲情追加, 0.60
+	TIMES SOURCE:屈従, 0.60
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES SOURCE:欲情追加, 1.00
+	TIMES SOURCE:屈従, 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES SOURCE:欲情追加, 1.30
+	TIMES SOURCE:屈従, 1.30
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES SOURCE:欲情追加, 1.60
+	TIMES SOURCE:屈従, 1.60
+ENDIF
+
+;調教者のTALENT:舌使いをみる
+IF TALENT:PLAYER:舌使い
+	IF W
+		TIMES SOURCE:快Ｃ , 2.00
+	ELSE
+		TIMES SOURCE:痛み , 2.00
+	ENDIF
+	SOURCE:恭順追加 += SOURCE:快Ｃ/20
+ENDIF
+
+;プライド高い
+SIF TALENT:プライド高い
+	SOURCE:屈従 /= 2
+;保守的
+SIF TALENT:保守的
+	SOURCE:屈従 /= 3
+;薬毒耐性
+SIF TALENT:薬毒耐性
+	SOURCE:欲情追加 /= 4
+
+;汚れ移動
+IF W == 0
+	;パートナーのB⇔調教者の口の汚れが移動
+	STAIN:胸 |= STAIN:PLAYER:口
+	STAIN:PLAYER:口 |= STAIN:胸
+ELSE
+	;パートナーのＶ⇔調教者の口の汚れが移動
+	STAIN:ヴァギナ |= STAIN:PLAYER:口
+	STAIN:PLAYER:口 |= STAIN:ヴァギナ
+ENDIF
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+;オトコが主人以外いない&オトコをはじいてるのでコメントアウト
+;ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+;	PRINTS EXPNAME:41
+;	PRINTL +1
+;	EXP:ＢＬ経験 += 1
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM202
+IF W == 0
+	PRINTFORML %CALLNAME:PLAYER%は%CALLNAME:TARGET%に豊かな胸を
+	PRINTFORML 抱き寄せるようにお願いすると、胸の窪みに酒を注ぎこんだ
+	PRINTFORMW 酒の刺激なのか%CALLNAME:TARGET%の顔は仄かに紅みを帯びている……
+	PRINTL 
+	PRINTFORM 十分酒が馴染んだ頃、%CALLNAME:PLAYER%は
+	IF (TALENT:母乳体質 && EX:噴乳 > 0) && PALAM:潤滑 >= PALAMLV:5
+		PRINTFORML %CALLNAME:TARGET%の唾液と母乳が混ざった酒を
+	ELSEIF TALENT:母乳体質 && EX:噴乳 > 0
+		PRINTFORML 母乳が混ざり、マイルドな味になった酒を
+	ELSEIF PALAM:潤滑 >= PALAMLV:5
+		PRINTFORML %CALLNAME:TARGET%の唾液がたっぷり混ざった酒を
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%の両乳房で作られた窪みに注がれている酒を
+	ENDIF
+	IF TALENT:PLAYER:酒豪
+		PRINTFORML 待っていましたと言わんばかりに飲み干した。
+		PRINTFORML そしてもったいないと言いながら%CALLNAME:TARGET%の乳房に付いている
+		PRINTFORMW 僅かな酒を根こそぎ舐めとった……
+	ELSE
+		PRINTFORMW 一気に飲み干した。
+	ENDIF
+ELSE
+	PRINTFORM %CALLNAME:PLAYER%は
+	IF W == 1
+		PRINTFORML %CALLNAME:TARGET%を正座させ、両足を閉じさせると
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%の両足を閉じさせると
+	ENDIF
+	PRINTFORML 太ももと下腹部とで作られた窪みに酒を注ぎこんだ
+	PRINTFORMW 酒の刺激なのか%CALLNAME:TARGET%の顔は仄かに紅みを帯びている……
+	PRINTL 
+	PRINTFORM 十分酒が馴染んだ頃、%CALLNAME:PLAYER%は
+	IF PALAM:潤滑 >= PALAMLV:5
+		PRINTFORML %CALLNAME:TARGET%の愛液がたっぷり混ざった酒を
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%の両足とデルタ地帯にできた窪みに注がれている酒を
+	ENDIF
+	IF TALENT:PLAYER:酒豪
+		PRINTFORML 待っていましたと言わんばかりに飲み干した。
+		PRINTFORML そしてもったいないと言いながら%CALLNAME:TARGET%の太ももに残った
+		PRINTFORMW 僅かな酒をも逃すまいと舐め始めた……
+	ELSE
+		PRINTFORMW 一気に飲み干した。
+	ENDIF
+ENDIF
+

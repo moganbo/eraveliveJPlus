@@ -1,0 +1,499 @@
+﻿@COM73
+;スク水プレイ
+
+PRINTL スク水プレイ
+
+;スク水を脱ぐのはいつでも
+IF TEQUIP:60
+	STR:0 = スク水プレイ終了
+	CALL TRAIN_MESSAGE_B
+	TEQUIP:60 = 0
+	RETURN 1
+ENDIF
+;-------------------------------------------------
+;実行できるかの判定
+;-------------------------------------------------
+CALL COM_ORDER_COMMON
+SIF RESULT == 0
+	RETURN 0
+
+;-------------------------------------------------
+;実行決定
+;-------------------------------------------------
+STR:0 = スク水プレイ
+CALL TRAIN_MESSAGE_B
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+LOSEBASE:体力 += 5
+LOSEBASE:気力 += 40
+
+A = 500
+B = 500
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+;ABL:露出癖をみる
+IF ABL:露出癖 == 0
+	SOURCE:中毒充足 += 0
+	SOURCE:液体追加 += 0
+	TIMES A, 1.00
+ELSEIF ABL:露出癖 == 1
+	SOURCE:中毒充足 += 50
+	SOURCE:液体追加 += 50
+	TIMES A, 1.20
+ELSEIF ABL:露出癖 == 2
+	SOURCE:中毒充足 += 100
+	SOURCE:液体追加 += 100
+	TIMES A, 1.40
+ELSEIF ABL:露出癖 == 3
+	SOURCE:中毒充足 += 200
+	SOURCE:液体追加 += 200
+	TIMES A, 1.60
+ELSEIF ABL:露出癖 == 4
+	SOURCE:中毒充足 += 400
+	SOURCE:液体追加 += 400
+	TIMES A, 2.00
+ELSE
+	SOURCE:中毒充足 += 800
+	SOURCE:液体追加 += 800
+	TIMES A, 3.00
+ENDIF
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	TIMES A , 0.80
+ELSEIF ABL:マゾっ気 == 1
+	TIMES A , 1.00
+ELSEIF ABL:マゾっ気 == 2
+	TIMES A , 1.30
+ELSEIF ABL:マゾっ気 == 3
+	TIMES A , 1.60
+ELSEIF ABL:マゾっ気 == 4
+	TIMES A , 2.00
+ELSE
+	TIMES A , 3.00
+ENDIF
+
+;目立ちたがり
+SIF TALENT:目立ちたがり
+	TIMES A , 1.50
+;解放
+SIF TALENT:解放
+	TIMES A , 1.50
+
+;臆病
+SIF TALENT:臆病
+	TIMES B , 2.00
+;恥じらい
+SIF TALENT:恥じらい
+	TIMES B , 2.00
+;小柄体型
+IF TALENT:小柄体型
+	TIMES A , 1.50
+	TIMES B , 1.50
+ENDIF
+
+;巨乳
+SIF TALENT:巨乳
+	SOURCE:痛み = 500
+
+;幼児／幼児退行、幼稚
+SIF TALENT:幼児 || TALENT:幼稚
+	TIMES A , 2.00
+
+SOURCE:露出 += A
+SOURCE:屈従 += A/2
+SOURCE:逸脱 += B
+
+UP:恥情 += A/3
+UP:恐怖 += SOURCE:逸脱/2
+;貧乳
+SIF TALENT:貧乳
+	UP:恥情 += A/6
+;幼児／幼児退行、幼稚
+SIF TALENT:幼児 || TALENT:幼稚
+	UP:恐怖 += SOURCE:逸脱/2
+
+;スク水の着用
+TEQUIP:60 = 1
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM73
+IF TEQUIP:60
+	PRINTFORML %CALLNAME:TARGET%が着けているスクール水着を脱がせた……
+	PRINTL 　
+ELSE
+	PRINTFORML %CALLNAME:TARGET%にスクール水着を着けるよう頼んだ
+	PRINTFORM %CALLNAME:TARGET%は
+	IF TALENT:恥じらい
+		PRINTFORML 顔を真っ赤にしつつ%CALLNAME:PLAYER%の要望を実行している……
+	ELSEIF TALENT:貧乳
+		PRINTL 水着を着けたまではよかったものの、
+		PRINTL 自分の胸の貧相さを意識しているのかしきりに胸を隠す動作を繰り返している……
+	ELSEIF TALENT:巨乳
+		PRINTL 水着を着けたまではよかったものの、
+		PRINTL 胸回りが窮屈に感じるのか胸元に手を伸ばしては布地を引っ張る動作を頻繁に繰り返している……
+	ELSEIF TALENT:幼児 || TALENT:幼稚
+		PRINTL 水着を着けると子供のようにはしゃぎ始めた
+	ELSEIF TALENT:淫乱 || TALENT:倒錯的
+		PRINTL 一瞬躊躇するそぶりを見せたものの、
+		PRINTL 早くも新たな快感に目覚めたのかいそいそと着替え始めた……
+	ELSE
+		PRINTL 心底呆れたような表情を浮かべながらも要望通り水着を着けていく……
+	ENDIF
+ENDIF
+
+@EQUIP_COM60
+;スク水プレイ
+
+PRINTL ＜スク水プレイ中＞
+
+LOSEBASE:体力 += 0
+LOSEBASE:気力 += 20
+
+A = 500
+B = 500
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+;ABL:露出癖をみる
+IF ABL:露出癖 == 0
+	SOURCE:中毒充足 += 0
+	SOURCE:液体追加 += 0
+	TIMES A, 1.00
+ELSEIF ABL:露出癖 == 1
+	SOURCE:中毒充足 += 50
+	SOURCE:液体追加 += 50
+	TIMES A, 1.20
+ELSEIF ABL:露出癖 == 2
+	SOURCE:中毒充足 += 100
+	SOURCE:液体追加 += 100
+	TIMES A, 1.40
+ELSEIF ABL:露出癖 == 3
+	SOURCE:中毒充足 += 200
+	SOURCE:液体追加 += 200
+	TIMES A, 1.60
+ELSEIF ABL:露出癖 == 4
+	SOURCE:中毒充足 += 400
+	SOURCE:液体追加 += 400
+	TIMES A, 2.00
+ELSE
+	SOURCE:中毒充足 += 800
+	SOURCE:液体追加 += 800
+	TIMES A, 3.00
+ENDIF
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	TIMES A , 0.80
+ELSEIF ABL:マゾっ気 == 1
+	TIMES A , 1.00
+ELSEIF ABL:マゾっ気 == 2
+	TIMES A , 1.30
+ELSEIF ABL:マゾっ気 == 3
+	TIMES A , 1.60
+ELSEIF ABL:マゾっ気 == 4
+	TIMES A , 2.00
+ELSE
+	TIMES A , 3.00
+ENDIF
+
+;目立ちたがり
+SIF TALENT:目立ちたがり
+	TIMES A , 1.50
+;解放
+SIF TALENT:解放
+	TIMES A , 1.50
+
+;臆病
+SIF TALENT:臆病
+	TIMES B , 2.00
+;恥じらい
+SIF TALENT:恥じらい
+	TIMES B , 2.00
+;小柄体型
+IF TALENT:小柄体型
+	TIMES A , 1.50
+	TIMES B , 1.50
+ENDIF
+
+;巨乳
+SIF TALENT:巨乳
+	SOURCE:痛み += 250
+
+;幼児／幼児退行、幼稚
+SIF TALENT:幼児 || TALENT:幼稚
+	TIMES A , 2.00
+
+SOURCE:露出 += A
+SOURCE:屈従 += A/2
+SOURCE:逸脱 += B
+
+UP:恥情 += A/3
+UP:恐怖 += SOURCE:逸脱/2
+;貧乳
+SIF TALENT:貧乳
+	UP:恥情 += A/6
+;幼児／幼児退行、幼稚
+SIF TALENT:幼児 || TALENT:幼稚
+	UP:恐怖 += SOURCE:逸脱/2
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+	EXP:PLAYER:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+	EXP:PLAYER:ＢＬ経験 += 1
+ENDIF
+
+SIF ASSIPLAY == 0 && ABL:露出癖 >= 3
+	TFLAG:30 += 1
+
+RETURN 1
+
+;-------------------------------------------------
+;固有の実行判定
+;-------------------------------------------------
+@COM_ORDER_73
+A = 0
+S = 0
+
+;難易度上昇
+;ビデオまたは野外で+10、羞恥プレイ中で+7、クリキャップまたはオナホール装着で＋3、
+;バイブ系やアナル系の道具で+5、拡張系道具装着でさらに＋3
+V = 27
+SIF TEQUIP:53 || TEQUIP:54
+	V += 10
+SIF TEQUIP:57
+	V += 7
+SIF TEQUIP:14 || TEQUIP:17
+	V += 3
+SIF TEQUIP:11 || TEQUIP:61 || TEQUIP:71
+	V += 5
+SIF TEQUIP:13 || TEQUIP:19 || TEQUIP:46 || TEQUIP:47 || TEQUIP:48 || TEQUIP:49 || TEQUIP:70 || TEQUIP:79
+	V += 5
+SIF TEQUIP:14 || TEQUIP:48 || TEQUIP:70 || TEQUIP:71 || TEQUIP:79 > 2
+	V += 3
+
+;すべての命令に共通の要素を考慮
+;(従順が高いと命令に従いやすいなど)
+CALL COM_ORDER
+
+;ABL:欲望
+IF ABL:欲望
+	A += ABL:欲望 * 3
+ENDIF
+;ABL:露出癖
+IF ABL:露出癖
+	A += ABL:露出癖 * 4
+ENDIF
+;ABL:自慰中毒
+IF ABL:自慰中毒
+	A += ABL:自慰中毒 * 3
+ENDIF
+
+IF MARK:快楽依存
+	A += MARK:快楽依存 * 3
+ENDIF
+
+
+;PALAM:欲情
+IF PALAM:欲情 < PALAMLV:1
+	L = 0
+ELSEIF PALAM:欲情 < PALAMLV:2
+	L = 1
+ELSEIF PALAM:欲情 < PALAMLV:3
+	L = 2
+ELSEIF PALAM:欲情 < PALAMLV:4
+	L = 3
+ELSEIF PALAM:欲情 < PALAMLV:5
+	L = 4
+ELSE
+	L = 5
+ENDIF
+IF L
+	A += L * 3
+ENDIF
+
+;自制心
+IF TALENT:自制心
+	A -= 5
+ENDIF
+;恥じらい
+IF TALENT:恥じらい
+	A -= 5
+ENDIF
+;恥薄い
+IF TALENT:恥薄い
+	A += 2
+ENDIF
+;自慰しやすい
+IF TALENT:自慰しやすい
+	A += 5
+ENDIF
+;快感に素直
+IF TALENT:快感に素直
+	A += 5
+ENDIF
+;快感の否定
+IF TALENT:快感の否定
+	A -= 5
+ENDIF
+
+;媚薬
+IF TEQUIP:21
+	A += 8
+ENDIF
+
+IF ((FLAG:23 & 1p27) == 0) && FLAG:2 != 1
+	;ABL:欲望
+	IF ABL:欲望
+		SIF S
+			PRINT  + 
+		PRINTS ABLNAME:1
+		PRINTV 'LV,ABL:欲望,'(,ABL:欲望 * 3,')
+		S = 1
+	ENDIF
+	;ABL:露出癖
+	IF ABL:露出癖
+		SIF S
+			PRINT  + 
+		PRINTS ABLNAME:7
+		PRINTV 'LV,ABL:露出癖,'(,ABL:露出癖 * 4,')
+		S = 1
+	ENDIF
+	;ABL:自慰中毒
+	IF ABL:自慰中毒
+		SIF S
+			PRINT  + 
+		PRINTS ABLNAME:10
+		PRINTV 'LV,ABL:自慰中毒,'(,ABL:自慰中毒 * 3,')
+		S = 1
+	ENDIF
+
+	IF MARK:快楽依存
+		SIF S
+			PRINT  + 
+		PRINTS MARKNAME:1
+		PRINTV 'LV,MARK:快楽依存,'(,MARK:快楽依存 * 3,')
+		S = 1
+	ENDIF
+
+
+	;PALAM:欲情
+	IF PALAM:欲情 < PALAMLV:1
+		L = 0
+	ELSEIF PALAM:欲情 < PALAMLV:2
+		L = 1
+	ELSEIF PALAM:欲情 < PALAMLV:3
+		L = 2
+	ELSEIF PALAM:欲情 < PALAMLV:4
+		L = 3
+	ELSEIF PALAM:欲情 < PALAMLV:5
+		L = 4
+	ELSE
+		L = 5
+	ENDIF
+	IF L
+		SIF S
+			PRINT  + 
+		PRINTS PALAMNAME:5
+		PRINTV 'LV,L,'(,L * 3,')
+		S = 1
+	ENDIF
+
+	;自制心
+	IF TALENT:自制心
+		PRINT  - 
+		PRINTS TALENTNAME:20
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+	;恥じらい
+	IF TALENT:恥じらい
+		PRINT  - 
+		PRINTS TALENTNAME:35
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+	;恥薄い
+	IF TALENT:恥薄い
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:36
+		PRINTV '(,2,')
+		S = 1
+	ENDIF
+	;自慰しやすい
+	IF TALENT:自慰しやすい
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:60
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+	;快感に素直
+	IF TALENT:快感に素直
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:70
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+	;快感の否定
+	IF TALENT:快感の否定
+		PRINT  - 
+		PRINTS TALENTNAME:71
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+
+	;媚薬
+	IF TEQUIP:21
+		SIF S
+			PRINT  + 
+		PRINTS ITEMNAME:26
+		PRINTV '(,8,')
+		S = 1
+	ENDIF
+
+	;'合計を表示(27以上で実行)
+	PRINT  = 
+	PRINTV A
+
+	SIF A < V
+		PRINT  < 
+	SIF A == V
+		PRINT  = 
+	SIF A > V
+		PRINT  > 
+	PRINT 実行値
+	PRINTV V
+	WAIT
+ENDIF
+

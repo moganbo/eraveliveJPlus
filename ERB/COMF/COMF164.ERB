@@ -1,0 +1,281 @@
+﻿@COM_ABLE164
+;筆責め実行判定
+;COM_ABLE共通判定
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;ウフフ中じゃないと無理
+SIF TFLAG:44 == 0
+	RETURN 0
+;調教者が東北三姉妹じゃないとダメ
+SIF NO:PLAYER != 5 && NO:PLAYER != 10 && NO:PLAYER != 12
+	RETURN 0
+;技巧2以上じゃないと使えない
+SIF ABL:PLAYER:技巧 < 2
+	RETURN 0
+RETURN 1
+
+@COM164
+;筆責め
+
+PRINTL 筆責め
+STR:0 = 筆責め
+
+W = RAND:7
+;CALL TRAIN_MESSAGE_B
+
+LOSEBASE:体力 += 40
+LOSEBASE:気力 += 60
+
+SOURCE:性行動 = 120
+SOURCE:露出 = 200
+SOURCE:屈従 = 200
+SOURCE:逸脱 = 100
+
+IF W == 0
+	;筆ヘソ責め
+	A = 500
+	;MARK:反発感情を見る
+	IF MARK:反発感情 < 2
+		TIMES A, 1.25
+	ELSEIF MARK:反発感情 == 2
+		TIMES A, 1.00
+	ELSE
+		TIMES A, 0.75
+	ENDIF
+
+	;MARK:既成事実を見る
+	IF MARK:既成事実 > 2
+		TIMES A, 1.25
+	ELSEIF MARK:既成事実 == 2
+		TIMES A, 1.00
+	ELSEIF MARK:既成事実 == 1
+		TIMES A, 0.75
+	ELSE
+		TIMES A, 0.50
+	ENDIF
+
+	;MARK:快楽刻印を見る
+	IF MARK:快楽依存 > 2
+		TIMES A, 1.50
+	ELSEIF MARK:快楽依存 == 2
+		TIMES A, 1.25
+	ELSEIF MARK:快楽依存 == 1
+		TIMES A, 1.00
+	ELSE
+		TIMES A, 0.75
+	ENDIF
+
+	;MARK:苦痛刻印を見る
+	IF MARK:苦痛依存 > 2
+		TIMES A, 1.30
+	ELSEIF MARK:苦痛依存 == 2
+		TIMES A, 1.00
+	ELSEIF MARK:苦痛依存 == 1
+		TIMES A, 0.70
+	ELSE
+		TIMES A, 0.30
+	ENDIF
+
+	;ABL:マゾっ気をみる
+	IF ABL:マゾっ気 == 0
+		TIMES A, 0.50
+		SOURCE:中毒充足 = 40
+	ELSEIF ABL:マゾっ気 == 1
+		TIMES A, 0.75
+		SOURCE:中毒充足 = 80
+	ELSEIF ABL:マゾっ気 == 2
+		TIMES A, 1.00
+		SOURCE:中毒充足 = 160
+	ELSEIF ABL:マゾっ気 == 3
+		TIMES A, 1.20
+		SOURCE:中毒充足 = 320
+	ELSEIF ABL:マゾっ気 == 4
+		TIMES A, 1.50
+		SOURCE:中毒充足 = 650
+	ELSE
+		TIMES A, 2.00
+		SOURCE:中毒充足 = 1500
+	ENDIF
+
+	;プライド高い
+	SIF TALENT:プライド高い
+		TIMES A, 0.75
+	;プライド低い
+	SIF TALENT:プライド低い
+		TIMES A, 1.50
+	;自制心
+	SIF TALENT:自制心
+		TIMES A, 0.50
+	;抵抗
+	SIF TALENT:抵抗
+		TIMES A, 0.75
+	;弱味
+	SIF TALENT:弱味
+		TIMES A, 2.00
+	;中毒しやすい
+	SIF TALENT:中毒しやすい
+		TIMES A, 1.50
+	;倒錯的
+	SIF TALENT:倒錯的
+		TIMES A, 2.00
+
+	PALAM:反感 -= A
+	PALAM:不快 -= A
+	PALAM:抑鬱 -= A
+
+	SIF PALAM:反感 <= 0
+		PALAM:反感 = 0
+	SIF PALAM:不快 <= 0
+		PALAM:不快 = 0
+	SIF PALAM:抑鬱 <= 0
+		PALAM:抑鬱 = 0
+ELSEIF W == 1 || W == 2
+	;筆クリ責め
+	;ABL:Ｃ感覚をみる
+	IF ABL:Ｃ感覚 == 0
+		SOURCE:快Ｃ = 50
+		SOURCE:情愛 = 50
+	ELSEIF ABL:Ｃ感覚 == 1
+		SOURCE:快Ｃ = 100
+		SOURCE:情愛 = 100
+	ELSEIF ABL:Ｃ感覚 == 2
+		SOURCE:快Ｃ = 500
+		SOURCE:情愛 = 150
+	ELSEIF ABL:Ｃ感覚 == 3
+		SOURCE:快Ｃ = 1500
+		SOURCE:情愛 = 250
+	ELSEIF ABL:Ｃ感覚 == 4
+		SOURCE:快Ｃ = 2500
+		SOURCE:情愛 = 400
+	ELSE
+		SOURCE:快Ｃ = 3000
+		SOURCE:情愛 = 600
+	ENDIF
+
+	;Ｃ鈍感
+	SIF TALENT:Ｃ鈍感
+		TIMES SOURCE:快Ｃ, 0.75
+	;Ｃ敏感
+	SIF TALENT:Ｃ敏感
+		TIMES SOURCE:快Ｃ, 1.50
+ELSEIF W == 3 || W == 4
+	;筆バスト責め
+	;ABL:Ｂ感覚をみる
+	IF ABL:Ｂ感覚 == 0
+		SOURCE:情愛 = 50
+		SOURCE:快Ｂ = 50
+	ELSEIF ABL:Ｂ感覚 == 1
+		SOURCE:情愛 = 100
+		SOURCE:快Ｂ = 100
+	ELSEIF ABL:Ｂ感覚 == 2
+		SOURCE:情愛 = 150
+		SOURCE:快Ｂ = 200
+	ELSEIF ABL:Ｂ感覚 == 3
+		SOURCE:情愛 = 250
+		SOURCE:快Ｂ = 600
+	ELSEIF ABL:Ｂ感覚 == 4
+		SOURCE:情愛 = 400
+		SOURCE:快Ｂ = 1500
+	ELSE
+		SOURCE:情愛 = 600
+		SOURCE:快Ｂ = 2100
+	ENDIF
+
+	;Ｂ鈍感
+	SIF TALENT:Ｂ鈍感
+		TIMES SOURCE:快Ｂ, 0.75
+	;Ｂ敏感
+	SIF TALENT:Ｂ敏感
+		TIMES SOURCE:快Ｂ, 1.50
+	;貧乳
+	SIF TALENT:貧乳
+		TIMES SOURCE:快Ｂ, 2.00
+	;巨乳
+	SIF TALENT:巨乳
+		TIMES SOURCE:快Ｂ, 0.75
+ELSE
+	;筆アナル責め
+	;ABL:Ａ感覚をみる
+	IF ABL:Ａ感覚 == 0
+		SOURCE:快Ａ = 20
+		A = 150
+	ELSEIF ABL:Ａ感覚 == 1
+		SOURCE:快Ａ = 80
+		A = 250
+	ELSEIF ABL:Ａ感覚 == 2
+		SOURCE:快Ａ = 240
+		A = 400
+	ELSEIF ABL:Ａ感覚 == 3
+		SOURCE:快Ａ = 500
+		A = 650
+	ELSEIF ABL:Ａ感覚 == 4
+		SOURCE:快Ａ = 1400
+		A = 1000
+	ELSE
+		SOURCE:快Ａ = 2100
+		A = 1500
+	ENDIF
+
+	;尻穴狂い
+	SIF TALENT:尻穴狂い
+		TIMES SOURCE:快Ａ, 2.00
+	;Ａ鈍感
+	SIF TALENT:Ａ鈍感
+		TIMES SOURCE:快Ａ, 0.75
+	;Ａ敏感
+	SIF TALENT:Ａ敏感
+		TIMES SOURCE:快Ａ, 1.50
+
+	SOURCE:屈従 += A
+	SOURCE:逸脱 += A/2
+ENDIF
+
+CALL TRAIN_MESSAGE_B
+
+;筆アナル責め時の経験加算
+IF W >= 5
+	EXP:Ａ経験 += 1
+	PRINTL Ａ経験＋１
+ENDIF
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +5
+	EXP:レズ経験 += 5
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +5
+	EXP:ＢＬ経験 += 5
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM164
+IF W == 0
+	;筆ヘソ責め
+	PRINTFORML %CALLNAME:PLAYER%は懐から筆を取り出すと、
+	PRINTFORML %CALLNAME:TARGET%のヘソを毛先で撫で始めた
+	PRINTL 　
+	IF A > 0
+		PRINTFORML %CALLNAME:TARGET%の%PALAMNAME:11%が下がった
+		PRINTFORML %CALLNAME:TARGET%の%PALAMNAME:12%が下がった
+		PRINTFORML %CALLNAME:TARGET%の%PALAMNAME:13%が下がった
+		PRINTL 　
+	ENDIF
+ELSEIF W == 1 || W == 2
+	;筆クリ責め
+	PRINTFORML %CALLNAME:PLAYER%は懐から筆を取り出すと、
+	PRINTFORML %CALLNAME:TARGET%の陰核を毛先で突っつき始めた
+	PRINTL 　
+ELSEIF W == 3 || W == 4
+	;筆バスト責め
+	PRINTFORML %CALLNAME:PLAYER%は懐から筆を取り出すと、
+	PRINTFORML %CALLNAME:TARGET%の乳腺に筆先を捻じ込むように弄り始めた
+	PRINTL 　
+ELSE
+	;筆アナル責め
+	PRINTFORML %CALLNAME:PLAYER%は懐から筆を取り出すと、
+	PRINTFORML 焦らす様に穂先で%CALLNAME:TARGET%の菊門を撫でまわした
+	PRINTL 　
+ENDIF

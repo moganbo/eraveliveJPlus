@@ -1,0 +1,223 @@
+﻿@COM44
+;縄
+IF TEQUIP:90
+	PRINTL 触手緊縛
+	STR:0 = 触手緊縛
+ELSE
+	PRINTL 縄
+	STR:0 = 縄
+ENDIF
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+
+;緊縛経験が高いと消費減少
+IF EXP:緊縛経験 < EXPLV:3
+	LOSEBASE:体力 += 100
+	LOSEBASE:気力 += 150
+ELSEIF EXP:緊縛経験 < EXPLV:4
+	LOSEBASE:体力 += 80
+	LOSEBASE:気力 += 120
+ELSE
+	LOSEBASE:体力 += 60
+	LOSEBASE:気力 += 90
+ENDIF
+
+A = 250
+SOURCE:痛み = 800
+SOURCE:露出 = 800
+SOURCE:屈従 = 500
+SOURCE:逸脱 = 500
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES A , 0.40
+ELSEIF ABL:親密 == 1
+	TIMES A , 0.60
+ELSEIF ABL:親密 == 2
+	TIMES A , 0.80
+ELSEIF ABL:親密 == 3
+	TIMES A , 1.00
+ELSEIF ABL:親密 == 4
+	TIMES A , 1.10
+ELSE
+	A = A * (ABL:親密 * 5 + 95) / 100
+ENDIF
+
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	TIMES A , 0.80
+ELSEIF ABL:マゾっ気 == 1
+	TIMES A , 1.00
+ELSEIF ABL:マゾっ気 == 2
+	TIMES A , 1.30
+ELSEIF ABL:マゾっ気 == 3
+	TIMES A , 1.60
+ELSEIF ABL:マゾっ気 == 4
+	TIMES A , 2.00
+ELSE
+	A = A * (ABL:マゾっ気 * 50 + 50) / 100
+ENDIF
+
+;ABL:サドっ気をみる
+IF ABL:PLAYER:サドっ気 == 0
+	TIMES SOURCE:痛み , 1.00
+ELSEIF ABL:PLAYER:サドっ気 == 1
+	TIMES SOURCE:痛み , 1.05
+ELSEIF ABL:PLAYER:サドっ気 == 2
+	TIMES SOURCE:痛み , 1.10
+ELSEIF ABL:PLAYER:サドっ気 == 3
+	TIMES SOURCE:痛み , 1.20
+ELSEIF ABL:PLAYER:サドっ気 == 4
+	TIMES SOURCE:痛み , 1.30
+ELSE
+	SOURCE:痛み = SOURCE:痛み * (ABL:PLAYER:サドっ気 * 5 + 125) / 100
+ENDIF
+
+;倒錯的
+SIF TALENT:倒錯的
+	TIMES A , 2.00
+
+SOURCE:痛み += A
+SOURCE:露出 += A
+SOURCE:屈従 += A
+SOURCE:逸脱 += A
+
+EXP:緊縛経験 += 5
+PRINTL 緊縛経験＋５
+
+CALL TRAIN_MESSAGE_B
+
+;縄の着脱
+IF TEQUIP:90
+	IF TEQUIP:44
+		TEQUIP:44 = 0
+	ELSE
+		TEQUIP:44 = 1
+		STAIN:手 |= 2
+		STAIN:手 |= 4
+		STAIN:胸 |= 2
+		STAIN:胸 |= 4
+	ENDIF
+	T = 0
+ELSE
+	IF TEQUIP:44
+		TEQUIP:44 = 0
+	ELSE
+		TEQUIP:44 = 1
+	ENDIF
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM44
+;縄の着脱
+IF TEQUIP:90
+	IF TEQUIP:44
+		PRINTFORML 触手は%CALLNAME:TARGET%の拘束を解いた
+	ELSE
+		PRINTFORML 無数の触手が%CALLNAME:TARGET%の体を縛りあげた
+	ENDIF
+ELSE
+	IF TEQUIP:44
+		PRINTFORML %CALLNAME:TARGET%から縄をほどいた
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%を縄で縛った
+	ENDIF
+ENDIF
+
+@EQUIP_COM44
+;緊縛中
+IF TEQUIP:90
+	PRINTL ＜触手緊縛中＞
+ELSE
+	PRINTL ＜緊縛中＞
+ENDIF
+
+;緊縛経験が高いと消費減少
+IF EXP:緊縛経験 < EXPLV:3
+	LOSEBASE:体力 += 50
+	LOSEBASE:気力 += 100
+ELSEIF EXP:緊縛経験 < EXPLV:4
+	LOSEBASE:体力 += 40
+	LOSEBASE:気力 += 80
+ELSE
+	LOSEBASE:体力 += 30
+	LOSEBASE:気力 += 60
+ENDIF
+
+
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	A = 60
+ELSEIF ABL:マゾっ気 == 1
+	A = 180
+ELSEIF ABL:マゾっ気 == 2
+	A = 300
+ELSEIF ABL:マゾっ気 == 3
+	A = 480
+ELSEIF ABL:マゾっ気 == 4
+	A = 700
+ELSE
+	A = 475 + (ABL:マゾっ気 * 75)
+ENDIF
+
+;倒錯的
+SIF TALENT:倒錯的
+	TIMES A , 2.00
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+
+SOURCE:痛み += A
+SOURCE:露出 += A
+SOURCE:屈従 += A
+SOURCE:逸脱 += A
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+	EXP:PLAYER:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+	EXP:PLAYER:ＢＬ経験 += 1
+ENDIF
+
+SIF ASSIPLAY == 0 && ABL:マゾっ気 >= 2
+	TFLAG:30 += 1
+
+SIF TEQUIP:90
+	T += 1
+
+EXP:緊縛経験 += 2
+PRINTL 緊縛経験＋２
+
+EXP:異常経験 += 1
+PRINTFORML %EXPNAME:50%＋１

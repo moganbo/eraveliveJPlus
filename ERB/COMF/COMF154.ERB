@@ -1,0 +1,378 @@
+﻿@COM_ABLE154
+;焼芋責め実行判定
+;東方コマンドおかしいの多くね？
+RETURN 0
+
+;COM_ABLE共通判定
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;ウフフ中じゃないと無理
+SIF TFLAG:44 == 0
+	RETURN 0
+;調教者が秋姉妹でないとダメ
+SIF 1
+	RETURN 0
+;異常経験フィルタ
+SIF ((FLAG:61 & 1) == 0) && (EXP:Ｖ経験 < EXPLV:1)
+	RETURN 0
+;触手調教中はダメ
+SIF TEQUIP:90
+	RETURN 0
+;解除はいつでも可能
+SIF TEQUIP:71
+	RETURN 1
+;体力が1000未満では装着不可能
+SIF BASE:体力 < 1000 && TEQUIP:71 == 0
+	RETURN 0
+;バイブ挿入中はダメ
+SIF TEQUIP:11
+	RETURN 0
+;クスコ挿入中はダメ
+SIF TEQUIP:61
+	RETURN 0
+;気力が０の時はダメ
+SIF BASE:気力 == 0
+	RETURN 0
+;Ｖ拡張経験少ないとダメ
+SIF EXP:Ｖ拡張経験 < 5
+	RETURN 0
+;オトコだとダメ
+SIF TALENT:オトコ
+	RETURN 0
+;調教対象が小人体型の場合は主人が禁断の知識持ちじゃないとダメ
+SIF TALENT:小人体型 && TALENT:MASTER:禁断の知識 == 0
+	RETURN 0
+;処女で、従順4以下・レズっ気4以下のASSIの場合焼芋責めはできない（サドならＯＫ）
+IF EXP:Ｖ経験 == 0 && ASSIPLAY
+	SIF (ABL:ASSI:親密 <= 4 || ABL:ASSI:レズっ気 <= 4) && TALENT:ASSI:サド == 0
+		RETURN 0
+ENDIF
+;潤滑不足で、従順3以下・レズっ気3以下のASSIの場合焼芋責めはできない（サドならＯＫ）
+IF PALAM:潤滑 < PALAMLV:2 && ASSIPLAY
+	SIF (ABL:ASSI:親密 <= 3 || ABL:ASSI:レズっ気 <= 3) && TALENT:ASSI:サド == 0
+		RETURN 0
+ENDIF
+RETURN 1
+
+@COM154
+;焼芋責め
+
+PRINTL 焼芋責め
+STR:0 = 焼芋責め
+
+
+LOSEBASE:体力 += 600
+LOSEBASE:気力 += 500
+
+SOURCE:露出 = 1000
+SOURCE:屈従 = 1500
+SOURCE:逸脱 = 1800
+SOURCE:恭順追加 = 800
+
+;ABL:Ｖ感覚をみる
+IF ABL:Ｖ感覚 == 0
+	SOURCE:快Ｖ = 2000
+ELSEIF ABL:Ｖ感覚 == 1
+	SOURCE:快Ｖ = 2500
+ELSEIF ABL:Ｖ感覚 == 2
+	SOURCE:快Ｖ = 3000
+ELSEIF ABL:Ｖ感覚 == 3
+	SOURCE:快Ｖ = 3500
+ELSEIF ABL:Ｖ感覚 == 4
+	SOURCE:快Ｖ = 4000
+ELSE
+	SOURCE:快Ｖ = 5000
+ENDIF
+
+;EXP:Ｖ経験をみる
+IF EXP:Ｖ経験 < EXPLV:1
+	TIMES SOURCE:快Ｖ , 0.20
+	SOURCE:痛み = 7000
+
+	EXP:異常経験 += 2
+	PRINTFORML %EXPNAME:50%＋１
+ELSEIF EXP:Ｖ経験 < EXPLV:2
+	TIMES SOURCE:快Ｖ , 0.60
+	SOURCE:痛み = 3500
+ELSEIF EXP:Ｖ経験 < EXPLV:3
+	TIMES SOURCE:快Ｖ , 1.00
+	SOURCE:痛み = 1000
+ELSEIF EXP:Ｖ経験 < EXPLV:4
+	TIMES SOURCE:快Ｖ , 1.20
+	SOURCE:痛み = 250
+ELSEIF EXP:Ｖ経験 < EXPLV:5
+	TIMES SOURCE:快Ｖ , 1.40
+	SOURCE:痛み = 50
+ELSE
+	TIMES SOURCE:快Ｖ , 1.60
+	SOURCE:痛み = 0
+ENDIF
+
+;PALAM:潤滑をみる
+IF PALAM:潤滑 < PALAMLV:1
+	TIMES SOURCE:快Ｖ , 0.10
+	SOURCE:痛み += 1000
+	TIMES SOURCE:痛み , 3.00
+ELSEIF PALAM:潤滑 < PALAMLV:2
+	TIMES SOURCE:快Ｖ , 0.40
+	SOURCE:痛み += 400
+	TIMES SOURCE:痛み , 1.00
+ELSEIF PALAM:潤滑 < PALAMLV:3
+	TIMES SOURCE:快Ｖ , 1.00
+	TIMES SOURCE:痛み , 0.50
+ELSEIF PALAM:潤滑 < PALAMLV:4
+	TIMES SOURCE:快Ｖ , 1.40
+	TIMES SOURCE:痛み , 0.20
+ELSEIF PALAM:潤滑 >= PALAMLV:4
+	TIMES SOURCE:快Ｖ , 1.80
+	TIMES SOURCE:痛み , 0.10
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES SOURCE:快Ｖ , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES SOURCE:快Ｖ , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES SOURCE:快Ｖ , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES SOURCE:快Ｖ , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES SOURCE:快Ｖ , 1.20
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES SOURCE:快Ｖ , 0.80
+ELSEIF ABL:親密 == 1
+	TIMES SOURCE:快Ｖ , 0.90
+ELSEIF ABL:親密 == 2
+	TIMES SOURCE:快Ｖ , 1.00
+ELSEIF ABL:親密 == 3
+	TIMES SOURCE:快Ｖ , 1.10
+ELSEIF ABL:親密 == 4
+	TIMES SOURCE:快Ｖ , 1.20
+ELSE
+	TIMES SOURCE:快Ｖ , 1.30
+ENDIF
+
+;小柄体型
+SIF TALENT:小柄体型
+	TIMES SOURCE:痛み , 2.00
+
+SIF TEQUIP:70 == 1
+	TIMES SOURCE:快Ｖ , 1.80
+
+EXP:Ｖ経験 += 3
+EXP:Ｖ拡張経験 += 4
+PRINTL Ｖ経験＋３
+PRINTL Ｖ拡張経験＋４
+
+CALL TRAIN_MESSAGE_B
+
+;焼き芋の着脱
+IF TEQUIP:71
+	TEQUIP:71 = 0
+	TFLAG:73 += 5
+ELSE
+	TEQUIP:71 = 1
+	TFLAG:73 += 10
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM154
+;焼き芋の着脱
+IF TEQUIP:71
+	PRINTFORML %CALLNAME:TARGET%の性器に突き刺さっているを大きな焼芋をゆっくりと引き抜いた。
+	PRINTFORM %CALLNAME:TARGET%
+	IF EXP:Ｖ拡張経験 >= 100 && TALENT:淫乱
+		PRINT の開発させきった膣は、さらなる快楽を貪るかのように焼芋に絡みつい
+	ELSEIF TALENT:恋慕 && TALENT:淫乱
+		PRINT は、芋から生えているひげのような根が膣内のひだを撫でられる度、まるで痙攣するかのように四肢をはねさせ
+	ELSEIF TALENT:恋慕
+		PRINTFORM は、荒い息をつきながらも%CALLNAME:PLAYER%と目が合うと満足げな表情を見せ
+	ELSEIF TALENT:淫乱
+		PRINT は、芋がもたらす快感にだらしなく舌をたらして嬌声をあげ
+	ELSEIF TALENT:痛みに弱い
+		PRINT は、陰唇から巨大な質量を誇る物体が引きずり出される感覚に耐えきれず、聞くに堪えない絶叫をあげ
+	ELSE
+		PRINT は、抜かれた瞬間ほっとした表情を浮かべているものの、膣内の喪失感に対する違和感が拭えず困惑し
+	ENDIF
+	PRINTW ている…
+ELSE
+	PRINTFORM %CALLNAME:PLAYER%は%CALLNAME:TARGET%の
+	SIF PALAM:潤滑 >= PALAMLV:5
+		PRINT 床に水溜まりができるほどの
+	SIF PALAM:潤滑 >= PALAMLV:3
+		PRINT 愛液で溢れている
+	IF TALENT:小柄体型
+		PRINT 幼いワレメに
+	ELSE
+		PRINT 秘裂に
+	ENDIF
+	PRINTL 拳よりも大きな焼芋をあてがった…
+	PRINTFORM %CALLNAME:TARGET%は
+	IF TALENT:処女 && TALENT:恋慕 && TALENT:淫乱
+		PRINT 処女である事を疑いたくなるような淫靡な笑みを浮かべ、中に誘っているように腰を振っ
+	ELSEIF TALENT:処女 && TALENT:恋慕
+		PRINTFORM 目をまん丸に開いて%CALLNAME:PLAYER%の手にあるものを見つめたまま固まっ
+	ELSEIF TALENT:処女 && TALENT:淫乱
+		PRINT 処女である事もお構いなしに、自ら陰唇を大きく拡げて挿入されるのを待っ
+	ELSEIF TALENT:処女 && TALENT:一線越えない
+		PRINT 目尻に涙を見せながら固く目を閉ざし、目の前の現実を否定するかのように首を左右に振っ
+	ELSEIF TALENT:処女 && TALENT:痛みに弱い
+		PRINT 半狂乱になりながらこの責めからなんとか逃れようと懸命に抵抗し
+	ELSEIF TALENT:処女
+		PRINT 顔面蒼白でこれから自分の性器に入れられる物体を見つめ
+	ELSEIF TALENT:恋慕 && TALENT:淫乱
+		PRINT 熱のこもった視線で“それ”を見つめ、自分から進んで膣口を大きく拡げている
+	ELSEIF TALENT:恋慕
+		PRINTFORM 笑みを浮かべてはいるものの戸惑いの表情を隠しきれないまま%CALLNAME:PLAYER%を見
+	ELSEIF TALENT:淫乱
+		PRINT 挿入される快感を限界まで引き出そうと膣を自分の指でかき回し、陰唇から愛液を滴らせ
+	ELSEIF TALENT:痛みに弱い
+		PRINT 涙を流しながら叫び声をあげ、手で今まさに自分の秘部に潜り込もうとするモノを払いのけようとし
+	ELSE
+		PRINTFORM 乾いた笑みを浮かべ、%CALLNAME:PLAYER%の手の中の芋を見つめ
+	ENDIF
+	PRINTW ている…
+ENDIF
+
+@EQUIP_COM154
+;焼芋
+
+PRINTL ＜焼芋挿入中＞
+
+;V経験を伴うコマンドのフラグ(処女膜再生対応)
+TFLAG:19 = 1
+
+LOSEBASE:体力 += 100
+LOSEBASE:気力 += 90
+
+;ABL:Ｖ感覚をみる
+IF ABL:Ｖ感覚 == 0
+	A = 40
+ELSEIF ABL:Ｖ感覚 == 1
+	A = 120
+ELSEIF ABL:Ｖ感覚 == 2
+	A = 360
+ELSEIF ABL:Ｖ感覚 == 3
+	A = 600
+ELSEIF ABL:Ｖ感覚 == 4
+	A = 900
+ELSE
+	A = 1300
+ENDIF
+
+;EXP:Ｖ経験をみる
+;処女はありえない
+IF EXP:Ｖ経験 < EXPLV:2
+	TIMES A , 0.60
+	B = 240
+ELSEIF EXP:Ｖ経験 < EXPLV:3
+	TIMES A , 1.00
+	B = 120
+ELSEIF EXP:Ｖ経験 < EXPLV:4
+	TIMES A , 1.20
+	B = 60
+ELSEIF EXP:Ｖ経験 < EXPLV:5
+	TIMES A , 1.40
+	B = 30
+ELSE
+	TIMES A , 1.60
+	B = 0
+ENDIF
+
+;PALAM:潤滑をみる
+IF PALAM:潤滑 < PALAMLV:1
+	TIMES A , 0.10
+	B += 400
+	TIMES B , 3.00
+	C += 1000
+ELSEIF PALAM:潤滑 < PALAMLV:2
+	TIMES A , 0.40
+	B += 150
+	TIMES B , 1.00
+	C += 200
+ELSEIF PALAM:潤滑 < PALAMLV:3
+	TIMES A , 1.00
+	TIMES B , 0.50
+	C += 80
+ELSEIF PALAM:潤滑 < PALAMLV:4
+	TIMES A , 1.40
+	TIMES B , 0.20
+ELSEIF PALAM:潤滑 >= PALAMLV:4
+	TIMES A , 1.80
+	TIMES B , 0.10
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES A , 0.80
+ELSEIF ABL:親密 == 1
+	TIMES A , 0.90
+ELSEIF ABL:親密 == 2
+	TIMES A , 1.00
+ELSEIF ABL:親密 == 3
+	TIMES A , 1.10
+ELSEIF ABL:親密 == 4
+	TIMES A , 1.20
+ELSE
+	TIMES A , 1.30
+ENDIF
+
+
+;小柄体型
+SIF TALENT:小柄体型
+	TIMES B , 2.00
+
+;貞操観念
+IF TALENT:貞操観念
+	;処女はありえない
+	TIMES B, 3.00
+ENDIF
+
+SOURCE:快Ｖ += A
+SOURCE:痛み += B
+
+;自慰実行時は経験＋１
+IF SELECTCOM == 3
+	EXP:Ｖ経験 += 3
+	EXP:Ｖ拡張経験 += 3
+	PRINTL Ｖ経験＋３
+	PRINTL Ｖ拡張経験＋３
+ELSE
+	EXP:Ｖ経験 += 2
+	EXP:Ｖ拡張経験 += 2
+	PRINTL Ｖ経験＋２
+	PRINTL Ｖ拡張経験＋２
+ENDIF
+
+TFLAG:73 += 1
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+ENDIF
+
+RETURN 1

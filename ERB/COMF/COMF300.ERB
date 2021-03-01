@@ -1,0 +1,159 @@
+﻿@COM300
+;戦闘訓練
+
+PRINTL 戦闘訓練
+STR:0 = 戦闘訓練
+CALL GET_SUCCESS_RATE
+B = 95 + A / 10
+SIF B > 99
+	B = 99
+A = RAND:100
+IF A <= 9
+	;10％で大成功
+	TFLAG:18 = 1
+ELSEIF A >= B
+	;5～1％で失敗
+	TFLAG:18 = -1
+ELSE
+	;残りは成功
+	TFLAG:18 = 0
+ENDIF
+
+CALL TRAIN_MESSAGE_B
+
+LOSEBASE:体力 += 50
+;戦闘経験で気力消費軽減
+IF EXP:戦闘経験 < 100
+	LOSEBASE:気力 += 100
+ELSEIF EXP:戦闘経験 < 500
+	LOSEBASE:気力 += 80
+ELSE
+	LOSEBASE:気力 += 50
+ENDIF
+
+;固定で獲得するソース
+SOURCE:歓楽 = 100
+
+;ABL:戦闘技能をみる
+IF ABL:戦闘技能 == 0
+	SOURCE:達成感 = 0
+ELSEIF ABL:戦闘技能 == 1
+	SOURCE:歓楽 += 10
+	SOURCE:達成感 = 50
+ELSEIF ABL:戦闘技能 == 2
+	SOURCE:歓楽 += 30
+	SOURCE:達成感 = 100
+ELSEIF ABL:戦闘技能 == 3
+	SOURCE:歓楽 += 50
+	SOURCE:達成感 = 150
+ELSEIF ABL:戦闘技能 == 4
+	SOURCE:歓楽 += 80
+	SOURCE:達成感 = 200
+ELSE
+	SOURCE:歓楽 += (ABL:戦闘技能 * 20)
+	SOURCE:達成感 = (ABL:戦闘技能 * 50)
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 <= 1
+	SOURCE:歓楽 += (ABL:親密 * 50)
+ELSEIF ABL:親密 <= 3
+	SOURCE:歓楽 += 50 + (ABL:親密 * 50)
+ELSEIF ABL:親密 <= 5
+	SOURCE:歓楽 += 100 + (ABL:親密 * 50)
+ELSEIF ABL:親密 <= 8
+	SOURCE:歓楽 += 150 + (ABL:親密 * 60)
+ELSEIF ABL:親密 <= 11
+	SOURCE:歓楽 += 200 + (ABL:親密 * 60)
+ELSE
+	SOURCE:歓楽 += 250 + (ABL:親密 * 70)
+ENDIF
+
+;主導権をチェック
+IF TFLAG:45 == 0
+	;主導権が主人公側
+	;ABL:マゾっ気をみる
+	IF ABL:マゾっ気 == 0
+		SOURCE:受動 = 300
+	ELSEIF ABL:マゾっ気 == 1
+		SOURCE:受動 = 600
+	ELSEIF ABL:マゾっ気 == 2
+		SOURCE:受動 = 1000
+	ELSEIF ABL:マゾっ気 == 3
+		SOURCE:受動 = 1500
+	ELSEIF ABL:マゾっ気 == 4
+		SOURCE:受動 = 2000
+	ELSE
+		SOURCE:受動 = 1500 + (ABL:マゾっ気 * 200)
+	ENDIF
+ELSE
+	;主導権が相手側
+	;ABL:サドっ気をみる
+	IF ABL:サドっ気 == 0
+		SOURCE:征服 = 400
+	ELSEIF ABL:サドっ気 == 1
+		SOURCE:征服 = 800
+	ELSEIF ABL:サドっ気 == 2
+		SOURCE:征服 = 1200
+	ELSEIF ABL:サドっ気 == 3
+		SOURCE:征服 = 1800
+	ELSEIF ABL:サドっ気 == 4
+		SOURCE:征服 = 2700
+	ELSE
+		SOURCE:征服 = 2500 + (ABL:サドっ気 * 200)
+	ENDIF
+ENDIF
+
+;好感度ランダム変化
+A = RAND:5 - 1
+TFLAG:30 += A
+
+A = RAND:10
+IF A <= 5
+	;60%で経験+1
+	B = 1
+ELSEIF A <= 8
+	;30%で経験+2
+	B = 2
+ELSE
+	;10%で経験+3
+	B = 3
+ENDIF
+
+IF TFLAG:18 == -1
+	TIMES SOURCE:達成感 , 0.50
+	TIMES SOURCE:歓楽 , 0.50
+	TIMES SOURCE:征服 , 0.50
+	TIMES SOURCE:受動 , 0.50
+	TFLAG:30 -= 3
+	B -= 1
+ELSEIF TFLAG:18 == 0
+	TIMES SOURCE:達成感 , 1.00
+	TIMES SOURCE:歓楽 , 1.00
+	TIMES SOURCE:征服 , 1.00
+	TIMES SOURCE:受動 , 1.00
+ELSE
+	TIMES SOURCE:達成感 , 2.00
+	TIMES SOURCE:歓楽 , 2.00
+	TIMES SOURCE:征服 , 2.00
+	TIMES SOURCE:受動 , 2.00
+	TFLAG:30 += 1
+	B += 1
+ENDIF
+
+PRINTFORML %EXPNAME:95%+{B}
+PRINTFORMW %EXPNAME:95%（%CALLNAME:PLAYER%）+{B}
+EXP:戦闘経験 += B
+EXP:PLAYER:戦闘経験 += B
+
+RETURN 1
+
+;戦闘訓練
+@TRAIN_MESSAGE_COM300
+PRINTFORMW %CALLNAME:PLAYER%は%CALLNAME:TARGET%と戦闘訓練をした
+IF TFLAG:18 == 1
+	PRINTFORML 思っていたよりも良い特訓が出来た。これは良い経験になるだろう…
+ELSEIF TFLAG:18 == -1
+	PRINTFORML ……しかし、%CALLNAME:PLAYER%はあっさりとバテてしまった
+ENDIF
+

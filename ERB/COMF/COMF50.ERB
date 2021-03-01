@@ -1,0 +1,29 @@
+﻿@COM50
+;ローション
+
+PRINTL ローション
+STR:0 = ローション
+CALL TRAIN_MESSAGE_B
+
+LOSEBASE:体力 += 0
+LOSEBASE:気力 += 0
+
+SOURCE:液体追加 = 10000
+SOURCE:露出 = 300
+
+ITEM:ローション -= 1
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+	EXP:PLAYER:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+	EXP:PLAYER:ＢＬ経験 += 1
+ENDIF
+
+RETURN 1
+

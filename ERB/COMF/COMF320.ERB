@@ -1,0 +1,154 @@
+﻿@COM320
+;宴会に参加
+
+;デート中は2人で酒を飲む扱い
+IF TEQUIP:2
+	PRINTL ２人でお酒を飲む($3000を消費)
+	;更にほろ酔い値にボーナス
+	TFLAG:47 += 3
+ELSE
+	PRINTL 宴会に参加($3000を消費)
+ENDIF
+STR:0 = 宴会に参加
+CALL GET_SUCCESS_RATE
+B = 95 + A / 10
+SIF B > 99
+	B = 99
+A = RAND:100
+IF A <= 9
+	;10％で大成功
+	TFLAG:18 = 1
+ELSEIF A >= B
+	;5～1％で失敗
+	TFLAG:18 = -1
+ELSE
+	;残りは成功
+	TFLAG:18 = 0
+ENDIF
+
+CALL TRAIN_MESSAGE_B
+
+LOSEBASE:気力 += 200
+MONEY -= 3000
+
+;固定で獲得するソース
+SOURCE:歓楽 = 500
+SOURCE:家務 = 100
+
+;ABL:従順をみる
+IF ABL:親密 <= 1
+	SOURCE:歓楽 += (ABL:親密 * 100)
+	SOURCE:家務 += (ABL:親密 * 30)
+ELSEIF ABL:親密 <= 3
+	SOURCE:歓楽 += 300 + (ABL:親密 * 100)
+	SOURCE:家務 += 200 + (ABL:親密 * 30)
+ELSEIF ABL:親密 <= 5
+	SOURCE:歓楽 += 750 + (ABL:親密 * 100)
+	SOURCE:家務 += 400 + (ABL:親密 * 30)
+ELSEIF ABL:親密 <= 8
+	SOURCE:歓楽 += 1000 + (ABL:親密 * 120)
+	SOURCE:家務 += 600 + (ABL:親密 * 40)
+ELSEIF ABL:親密 <= 11
+	SOURCE:歓楽 += 1500 + (ABL:親密 * 120)
+	SOURCE:家務 += 800 + (ABL:親密 * 40)
+ELSE
+	SOURCE:歓楽 += 3000 + (ABL:親密 * 60)
+	SOURCE:家務 += 1800 + (ABL:親密 * 20)
+ENDIF
+
+;ABL:金銭感覚をみる
+SOURCE:家務 = SOURCE:家務 * (ABL:金銭感覚 * 5 + 100) / 100
+
+;ABL:料理技術をみる
+SOURCE:家務 = SOURCE:家務 * (ABL:料理技能 * 7 + 100) / 100
+
+;好感度をみる
+IF CFLAG:2 <= 500
+	SOURCE:歓楽 += CFLAG:2
+ELSEIF CFLAG:2 <= 5000
+	SOURCE:歓楽 += 500 + (CFLAG:2 - 500) / 3
+ELSE
+	SOURCE:歓楽 += 2000 + (CFLAG:2 - 5000) / 5
+ENDIF
+SIF SOURCE:歓楽 < 0
+	SOURCE:歓楽 = 0
+
+;主導権をチェック
+IF TFLAG:45 == 0
+	;主導権が主人公側
+	;ABL:従順をみる
+	IF ABL:親密 == 0
+		SOURCE:受動 = 400
+	ELSEIF ABL:親密 == 1
+		SOURCE:受動 = 600
+	ELSEIF ABL:親密 == 2
+		SOURCE:受動 = 800
+	ELSEIF ABL:親密 == 3
+		SOURCE:受動 = 1000
+	ELSEIF ABL:親密 == 4
+		SOURCE:受動 = 1200
+	ELSE
+		SOURCE:受動 = 1000 + (ABL:親密 * 100)
+	ENDIF
+ELSE
+	;主導権が相手側
+	;ABL:サドっ気をみる
+	IF ABL:サドっ気 == 0
+		SOURCE:征服 = 500
+	ELSEIF ABL:サドっ気 == 1
+		SOURCE:征服 = 700
+	ELSEIF ABL:サドっ気 == 2
+		SOURCE:征服 = 900
+	ELSEIF ABL:サドっ気 == 3
+		SOURCE:征服 = 1100
+	ELSEIF ABL:サドっ気 == 4
+		SOURCE:征服 = 1300
+	ELSE
+		SOURCE:征服 = 1000 + (ABL:サドっ気 * 150)
+	ENDIF
+ENDIF
+
+;好感度ランダム変化
+;酒豪もちの場合変化
+IF TALENT:TARGET:酒豪
+	A = RAND:12 + 1
+ELSE
+	A = RAND:7 - 1
+ENDIF
+	TFLAG:30 += A
+
+
+;ほろ酔い値＋
+;酒豪もちの場合効果上昇
+IF TALENT:TARGET:酒豪
+	TFLAG:47 += 15
+ELSE
+	TFLAG:47 += 10
+ENDIF
+
+IF TFLAG:18 == -1
+	TIMES SOURCE:歓楽 , 0.10
+	TIMES SOURCE:家務 , 0.50
+	TIMES SOURCE:征服 , 0.50
+	TIMES SOURCE:受動 , 0.50
+	TFLAG:30 -= 10
+	TFLAG:37 -= 5
+	TFLAG:47 -= 2
+ELSEIF TFLAG:18 == 0
+	TIMES SOURCE:歓楽 , 1.00
+	TIMES SOURCE:家務 , 1.00
+	TIMES SOURCE:征服 , 1.00
+	TIMES SOURCE:受動 , 1.00
+	TFLAG:37 += A
+ELSE
+	TIMES SOURCE:歓楽 , 2.00
+	TIMES SOURCE:家務 , 2.00
+	TIMES SOURCE:征服 , 2.00
+	TIMES SOURCE:受動 , 2.00
+	TFLAG:30 += 2
+	TFLAG:37 += 5 + A
+	TFLAG:47 += 5
+ENDIF
+
+RETURN 1
+

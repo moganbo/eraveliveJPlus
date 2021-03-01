@@ -1,0 +1,50 @@
+﻿@COM51
+;媚薬
+
+PRINTL 媚薬
+STR:0 = 媚薬
+CALL TRAIN_MESSAGE_B
+
+;調合知識があれば消費を抑える
+D = 0
+IF TALENT:MASTER:調合知識
+	D = 1
+ELSEIF ASSI >= 0
+	SIF TALENT:ASSI:調合知識
+		D = 1
+ENDIF
+
+IF D
+	LOSEBASE:体力 += 150
+	LOSEBASE:気力 += 150
+ELSE
+	LOSEBASE:体力 += 300
+	LOSEBASE:気力 += 300
+ENDIF
+
+SOURCE:逸脱 = 2000
+;媚薬効果で欲情のアップが2倍になるので実際には+10000
+SOURCE:欲情追加 = 5000
+
+SIF TEQUIP:90 == 0
+	ITEM:媚薬 -= 1
+
+TEQUIP:21 = 1
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+	EXP:PLAYER:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+	EXP:PLAYER:ＢＬ経験 += 1
+ENDIF
+
+EXP:異常経験 += 1
+PRINTFORML %EXPNAME:50%＋１
+
+RETURN 1
+

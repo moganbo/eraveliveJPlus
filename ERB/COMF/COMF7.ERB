@@ -1,0 +1,77 @@
+﻿@COM7
+;何もしない
+
+PRINTL 何もしない
+STR:0 = 何もしない
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+LOSEBASE:体力 += 0
+LOSEBASE:気力 += 10
+
+SOURCE:逸脱 = 50
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	SOURCE:露出 = 10
+ELSEIF PALAM:欲情 < PALAMLV:2
+	SOURCE:露出 = 30
+ELSEIF PALAM:欲情 < PALAMLV:3
+	SOURCE:露出 = 60
+ELSEIF PALAM:欲情 < PALAMLV:4
+	SOURCE:露出 = 100
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	SOURCE:露出 = 150
+ENDIF
+
+;奉仕精神をみる
+IF ABL:奉仕精神 == 0
+	SOURCE:情愛 = 0
+ELSEIF ABL:奉仕精神 == 1
+	SOURCE:情愛 = 20
+ELSEIF ABL:奉仕精神 == 2
+	SOURCE:情愛 = 40
+ELSEIF ABL:奉仕精神 == 3
+	SOURCE:情愛 = 70
+ELSEIF ABL:奉仕精神 == 4
+	SOURCE:情愛 = 110
+ELSE
+	SOURCE:情愛 = 50 + (ABL:奉仕精神 * 20)
+ENDIF
+
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	TIMES SOURCE:情愛 , 0.80
+	TIMES SOURCE:露出 , 0.80
+	SOURCE:液体追加 = 0
+	SOURCE:欲情追加 = 0
+ELSEIF ABL:マゾっ気 == 1
+	TIMES SOURCE:情愛 , 1.00
+	TIMES SOURCE:露出 , 1.00
+	SOURCE:液体追加 = 20
+	SOURCE:欲情追加 = 30
+ELSEIF ABL:マゾっ気 == 2
+	TIMES SOURCE:情愛 , 1.30
+	TIMES SOURCE:露出 , 1.20
+	SOURCE:液体追加 = 40
+	SOURCE:欲情追加 = 70
+ELSEIF ABL:マゾっ気 == 3
+	TIMES SOURCE:情愛 , 1.40
+	TIMES SOURCE:露出 , 1.40
+	SOURCE:液体追加 = 70
+	SOURCE:欲情追加 = 120
+ELSEIF ABL:マゾっ気 == 4
+	TIMES SOURCE:情愛 , 1.70
+	TIMES SOURCE:露出 , 1.50
+	SOURCE:液体追加 = 110
+	SOURCE:欲情追加 = 180
+ELSE
+	SOURCE:情愛 = SOURCE:情愛 * (ABL:マゾっ気 * 15 + 125) / 100
+	SOURCE:露出 = SOURCE:露出 * (ABL:マゾっ気 * 10 + 120) / 100
+	SOURCE:液体追加 = 50 + (ABL:マゾっ気 * 20)
+	SOURCE:欲情追加 = 75 + (ABL:マゾっ気 * 35)
+ENDIF
+
+
+RETURN 1

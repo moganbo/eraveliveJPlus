@@ -1,0 +1,292 @@
+﻿@COM89
+;女体盛り
+
+PRINTL 女体盛り
+STR:0 = 女体盛り
+
+W = RAND:3
+IF W == 0
+	TFLAG:77 = 2
+ELSE
+	TFLAG:77 = 1
+ENDIF
+
+CALL TRAIN_MESSAGE_B
+
+;女体盛り終了
+IF TEQUIP:69
+	TEQUIP:69 = 0
+	LOSEBASE:体力 += 15
+	LOSEBASE:気力 += 50
+	A = ABL:欲望
+	B = ABL:露出癖
+	SOURCE:欲情追加 = A * 300
+	SOURCE:露出 = B * 500
+	TFLAG:77 = 0
+	RETURN 1
+ENDIF
+
+LOSEBASE:体力 += 20
+LOSEBASE:気力 += 50
+
+A = 500
+B = 500
+C = 0
+D = 0
+E = ABL:MASTER:技巧 + ABL:ASSI:技巧
+SIF ABL:MASTER:料理技能 > 0
+	C = ABL:MASTER:料理技能
+SIF ABL:ASSI:料理技能 > 0
+	D = ABL:ASSI:料理技能
+F = C+D
+
+
+SIF TFLAG:77 == 1
+	TIMES A , 1.50
+SIF TFLAG:77 == 2
+	TIMES B , 1.50
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+;ABL:露出癖をみる
+IF ABL:露出癖 == 0
+	SOURCE:中毒充足 += 0
+	SOURCE:液体追加 += 0
+	TIMES A, 1.00
+ELSEIF ABL:露出癖 == 1
+	SOURCE:中毒充足 += 50
+	SOURCE:液体追加 += 50
+	TIMES A, 1.20
+ELSEIF ABL:露出癖 == 2
+	SOURCE:中毒充足 += 150
+	SOURCE:液体追加 += 150
+	TIMES A, 1.40
+ELSEIF ABL:露出癖 == 3
+	SOURCE:中毒充足 += 400
+	SOURCE:液体追加 += 400
+	TIMES A, 1.60
+ELSEIF ABL:露出癖 == 4
+	SOURCE:中毒充足 += 750
+	SOURCE:液体追加 += 750
+	TIMES A, 2.00
+ELSE
+	SOURCE:中毒充足 += 1300
+	SOURCE:液体追加 += 1300
+	TIMES A, 3.00
+ENDIF
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	TIMES A , 0.80
+ELSEIF ABL:マゾっ気 == 1
+	TIMES A , 1.00
+ELSEIF ABL:マゾっ気 == 2
+	TIMES A , 1.30
+ELSEIF ABL:マゾっ気 == 3
+	TIMES A , 1.60
+ELSEIF ABL:マゾっ気 == 4
+	TIMES A , 2.00
+ELSE
+	TIMES A , 3.00
+ENDIF
+
+;目立ちたがり
+SIF TALENT:目立ちたがり
+	TIMES A , 1.50
+;解放
+SIF TALENT:解放
+	TIMES A , 1.50
+;臆病
+SIF TALENT:臆病
+	TIMES B , 2.00
+;恥じらい
+SIF TALENT:恥じらい
+	TIMES B , 2.00
+
+SOURCE:露出 += A
+SOURCE:逸脱 += B
+SOURCE:恭順追加 += A/2
+
+UP:恥情 += A/2
+UP:恐怖 += (SOURCE:逸脱)/2
+
+IF F > 0
+	IF F > 8 && ABL:PLAYER:料理技能 >= 4
+		JUEL:ASSI:習得 += 500 * F
+		EXP:ASSI:家事経験 += F
+		EXP:MASTER:家事経験 += F
+		PRINTFORML %CALLNAME:ASSI%の%PALAMNAME:4%の珠＋{500*F}
+		PRINTFORML %CALLNAME:ASSI%の%EXPNAME:90%＋{F}
+		PRINTFORML %CALLNAME:MASTER%の%EXPNAME:90%＋{F}
+	ELSEIF F > 6 && ABL:PLAYER:料理技能 >= 3
+		JUEL:ASSI:習得 += 300 * F
+		EXP:ASSI:家事経験 += F/2
+		EXP:MASTER:家事経験 += F/2
+		PRINTFORML %CALLNAME:ASSI%の%PALAMNAME:4%の珠＋{300*F}
+		PRINTFORML %CALLNAME:ASSI%の%EXPNAME:90%＋{F/2}
+		PRINTFORML %CALLNAME:MASTER%の%EXPNAME:90%＋{F/2}
+	ELSEIF F > 4 && ABL:PLAYER:料理技能 >= 2
+		JUEL:ASSI:習得 += 200 * F
+		EXP:ASSI:家事経験 += F/2
+		EXP:MASTER:家事経験 += F/2
+		PRINTFORML %CALLNAME:ASSI%の%PALAMNAME:4%の珠＋{200*F}
+		PRINTFORML %CALLNAME:ASSI%の%EXPNAME:90%＋{F/2}
+		PRINTFORML %CALLNAME:MASTER%の%EXPNAME:90%＋{F/2}
+	ELSE
+		JUEL:ASSI:習得 += 100 * F
+		EXP:ASSI:家事経験 += F/2
+		EXP:MASTER:家事経験 += F/2
+		PRINTFORML %CALLNAME:ASSI%の%PALAMNAME:4%の珠＋{100*F}
+		PRINTFORML %CALLNAME:ASSI%の%EXPNAME:90%＋{F/2}
+		PRINTFORML %CALLNAME:MASTER%の%EXPNAME:90%＋{F/2}
+	ENDIF
+ELSE
+	JUEL:ASSI:習得 += 10 * (E+1)
+	EXP:ASSI:家事経験 += 1
+	EXP:MASTER:家事経験 += 1
+	PRINTFORML %CALLNAME:ASSI%の%PALAMNAME:4%の珠＋{10*(E+1)}
+	PRINTFORML %CALLNAME:ASSI%の%EXPNAME:90%＋１
+	PRINTFORML %CALLNAME:MASTER%の%EXPNAME:90%＋１
+ENDIF
+
+ITEM:30 -= 1
+TEQUIP:69 = 1
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM89
+IF TEQUIP:69
+	PRINTFORML %CALLNAME:MASTER%と%CALLNAME:ASSI%で%CALLNAME:TARGET%に乗っている具材を平らげた……
+ELSE
+	PRINTFORM %CALLNAME:TARGET%を寝かせるとその上に
+	IF TFLAG:77 == 1
+		PRINTL 鯵、鮪、鯛等色とりどりの刺身を盛りつけた……
+	ELSEIF TFLAG:77 == 2
+		PRINTL 生クリームやフルーツなどを盛りつけた……
+	ENDIF
+	PRINTFORML 　
+ENDIF
+
+@EQUIP_COM89
+;女体盛り
+
+W = RAND:8
+IF W == 0 && TALENT:オトコ == 0 && TEQUIP:44 && TEQUIP:54
+	;縄で緊縛＋野外プレイのとき一定確率で発生
+	PRINTL ＜酒恥肉倫＞
+	CALL NYOTAIMORI_PARTY
+	TEQUIP:69 = 0
+	TFLAG:77 = 3
+ELSE
+	PRINTL ＜女体盛りプレイ中＞
+	
+	LOSEBASE:体力 += 40
+	LOSEBASE:気力 += 50
+
+	A = 500
+	B = 500
+	SIF TFLAG:77 == 1
+		TIMES A , 1.50
+	SIF TFLAG:77 == 2
+		TIMES B , 1.50
+
+
+	;PALAM:欲情をみる
+	IF PALAM:欲情 < PALAMLV:1
+		TIMES A , 0.80
+	ELSEIF PALAM:欲情 < PALAMLV:2
+		TIMES A , 0.90
+	ELSEIF PALAM:欲情 < PALAMLV:3
+		TIMES A , 1.00
+	ELSEIF PALAM:欲情 < PALAMLV:4
+		TIMES A , 1.10
+	ELSEIF PALAM:欲情 >= PALAMLV:4
+		TIMES A , 1.20
+	ENDIF
+	;ABL:露出癖をみる
+	IF ABL:露出癖 == 0
+		SOURCE:中毒充足 += 0
+		SOURCE:液体追加 += 0
+		TIMES A, 1.00
+	ELSEIF ABL:露出癖 == 1
+		SOURCE:中毒充足 += 50
+		SOURCE:液体追加 += 50
+		TIMES A, 1.20
+	ELSEIF ABL:露出癖 == 2
+		SOURCE:中毒充足 += 150
+		SOURCE:液体追加 += 150
+		TIMES A, 1.40
+	ELSEIF ABL:露出癖 == 3
+		SOURCE:中毒充足 += 400
+		SOURCE:液体追加 += 400
+		TIMES A, 1.60
+	ELSEIF ABL:露出癖 == 4
+		SOURCE:中毒充足 += 750
+		SOURCE:液体追加 += 750
+		TIMES A, 2.00
+	ELSE
+		SOURCE:中毒充足 += 1300
+		SOURCE:液体追加 += 1300
+		TIMES A, 3.00
+	ENDIF
+	;ABL:マゾっ気をみる
+	IF ABL:マゾっ気 == 0
+		TIMES A , 0.80
+	ELSEIF ABL:マゾっ気 == 1
+		TIMES A , 1.00
+	ELSEIF ABL:マゾっ気 == 2
+		TIMES A , 1.30
+	ELSEIF ABL:マゾっ気 == 3
+		TIMES A , 1.60
+	ELSEIF ABL:マゾっ気 == 4
+		TIMES A , 2.00
+	ELSE
+		TIMES A , 3.00
+	ENDIF
+
+	;目立ちたがり
+	SIF TALENT:目立ちたがり
+		TIMES A , 1.50
+	;解放
+	SIF TALENT:解放
+		TIMES A , 1.50
+
+	;臆病
+	SIF TALENT:臆病
+		TIMES B , 2.00
+	;恥じらい
+	SIF TALENT:恥じらい
+		TIMES B , 2.00
+
+	SOURCE:露出 += A
+	SOURCE:逸脱 += B
+	SOURCE:恭順追加 += A/2
+
+	UP:恥情 += A/2
+	UP:恐怖 += (SOURCE:逸脱)/2
+
+	IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+		PRINTS EXPNAME:40
+		PRINTL +1
+		EXP:レズ経験 += 1
+	ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+		PRINTS EXPNAME:41
+		PRINTL +1
+		EXP:ＢＬ経験 += 1
+	ENDIF
+ENDIF
+
+SIF ASSIPLAY == 0 && ABL:露出癖 >= 3
+	TFLAG:30 += 1
+
+RETURN 1
+

@@ -1,0 +1,1372 @@
+﻿;---------------------------------------------------------
+;アイテム出現条件
+;---------------------------------------------------------
+@SALEITEM_CHECK
+;1つ以上持ってる場合はITEMSALESを0にする。持ってない場合は販売中(ITEMSALESが1)になる
+;既にアイテムがあるのに販売中になっているという不自然な状態をここでまとめてチェックする
+FOR LOCAL, 0, 100
+	SIF STRLENS(ITEMNAME:LOCAL) == 0
+		CONTINUE
+	IF ITEM:LOCAL
+		ITEMSALES:LOCAL = 0
+	ELSE
+		ITEMSALES:LOCAL = 1
+	ENDIF
+NEXT
+
+;ローション、媚薬、ビデオテープはとりあえず99個まで
+ITEMSALES:25 = 1
+ITEMSALES:26 = 1
+ITEMSALES:27 = 1
+ITEMSALES:29 = 1
+ITEMSALES:30 = 1
+ITEMSALES:31 = 1
+ITEMSALES:33 = 1
+ITEMSALES:34 = 1
+ITEMSALES:35 = 1
+SIF ITEM:ローション >= 99
+	ITEMSALES:25 = 0
+SIF ITEM:媚薬 >= 99
+	ITEMSALES:26 = 0
+SIF ITEM:利尿剤 >= 99
+	ITEMSALES:27 = 0
+SIF ITEM:28 >= 99
+	ITEMSALES:28 = 0
+SIF ITEM:コンドーム >= 99
+	ITEMSALES:29 = 0
+SIF ITEM:30 >= 99
+	ITEMSALES:30 = 0
+SIF ITEM:31 >= 99
+	ITEMSALES:31 = 0
+SIF ITEM:排卵誘発剤 >= 99
+	ITEMSALES:33 = 0
+SIF ITEM:緊急避妊薬 >= 99
+	ITEMSALES:34 = 0
+SIF ITEM:オムツ >= 99
+	ITEMSALES:35 = 0
+
+;コンフィグで妊娠機能オンじゃないとダメ
+;33,排卵誘発剤 34,緊急避妊薬
+IF (FLAG:62 & 1) == 0
+	ITEMSALES:33 = 0
+	ITEMSALES:34 = 0
+ENDIF
+
+;コンフィグでＡ系コマンド拡張がONになってないと無理
+;15,浣腸器具一式 20,アナルビーズ
+IF (FLAG:61 & 1p5) == 0
+	ITEMSALES:15 = 0
+	ITEMSALES:20 = 0
+ENDIF
+
+;主人か助手が『禁断の知識』を持っている
+F = 0
+IF TALENT:MASTER:禁断の知識
+	F = 1
+	ITEMSALES:66 = 0
+ELSEIF ASSI >= 0
+	SIF TALENT:ASSI:禁断の知識
+		F = 1
+ENDIF
+;助手全体から禁断の知識を検索
+REPEAT CHARANUM
+	IF COUNT == 0
+		CONTINUE
+	ELSEIF CFLAG:COUNT:21
+		CONTINUE
+	ELSEIF ISASSI:COUNT == 1
+		SIF TALENT:COUNT:禁断の知識
+			F = 1
+	ENDIF
+REND
+
+;主人か助手が『調合知識』を持っている
+P = 0
+IF TALENT:MASTER:調合知識
+	P = 1
+	ITEMSALES:65 = 0
+ELSEIF ASSI >= 0
+	SIF TALENT:ASSI:調合知識
+		P = 1
+ENDIF
+;助手全体から調合知識を検索
+REPEAT CHARANUM
+	IF COUNT == 0
+		CONTINUE
+	ELSEIF CFLAG:COUNT:21
+		CONTINUE
+	ELSEIF ISASSI:COUNT == 1
+		SIF TALENT:COUNT:調合知識
+			P = 1
+	ENDIF
+REND
+
+ITEMSALES:71 = 0
+ITEMSALES:72 = 0
+ITEMSALES:73 = 0
+ITEMSALES:74 = 0
+ITEMSALES:75 = 0
+ITEMSALES:76 = 0
+ITEMSALES:77 = 0
+ITEMSALES:78 = 0
+ITEMSALES:79 = 0
+ITEMSALES:80 = 0
+ITEMSALES:81 = 0
+IF F || P
+	REPEAT CHARANUM
+		SIF CFLAG:COUNT:21
+			CONTINUE
+		;71,薬の材料(双),20000,;ふたなりにする
+		;既になっていたらダメ
+		IF TALENT:COUNT:ふたなり == 0 && TALENT:COUNT:オトコ == 0
+			;禁断の知識がない場合、対象に調合知識か不思議な根か具現が必要
+			SIF F || (TALENT:COUNT:調合知識 || TALENT:COUNT:不思議な根 || TALENT:COUNT:具現)
+				ITEMSALES:71 = 1
+		ENDIF
+		;72,薬の材料(消),10000,;ふたなりを消去する
+		SIF TALENT:COUNT:ふたなり && TALENT:COUNT:オトコ == 0
+			ITEMSALES:72 = 1
+		;73,青の飴玉,20000,;体が成長するキャンディ。母乳体質になる
+		;すでに母乳体質だとダメ、禁断の知識でないとダメ
+		SIF F && TALENT:COUNT:母乳体質 == 0 && TALENT:COUNT:オトコ == 0
+			ITEMSALES:73 = 1
+		;74,赤の飴玉,20000,;体が若返るキャンディ。処女膜が再生する
+		;処女は対象外、禁断の知識でないとダメ
+		SIF F && TALENT:COUNT:処女 == 0 && TALENT:COUNT:オトコ == 0
+			ITEMSALES:74 = 1
+		;75,豊胸剤,20000,;胸の大きさを1段階上げる。
+		;巨乳だとダメ
+		SIF TALENT:COUNT:巨乳 == 0 && TALENT:COUNT:オトコ == 0
+			ITEMSALES:75 = 1
+		;76,縮胸剤,10000,;胸の大きさを1段階下げる。
+		;貧乳だとダメ
+		SIF TALENT:COUNT:貧乳 == 0 && TALENT:COUNT:オトコ == 0
+			ITEMSALES:76 = 1
+		;77,止乳剤,5000,;母乳が出なくなる
+		;母乳体質じゃないとダメ
+		SIF TALENT:COUNT:母乳体質 && TALENT:COUNT:オトコ == 0
+			ITEMSALES:77 = 1
+		;78,尿漏れ改善薬,5000,;お漏らし癖が直る。
+		;お漏らし癖じゃないとダメ
+		SIF TALENT:COUNT:おもらし癖
+			ITEMSALES:78 = 1
+		;79,黄の飴玉,20000,;卵を産ませる
+		;妊娠中もしくは産卵経験が1以上じゃないとダメ
+		SIF TALENT:COUNT:妊娠 || EXP:COUNT:産卵経験 > 0
+			ITEMSALES:79 = 1
+		;80,金の飴玉,30000,;小柄体型持ちを成長させる
+		;小柄体系でないとダメ
+		SIF TALENT:COUNT:小柄体型
+			ITEMSALES:80 = 1
+		;81,黒の飴玉,50000,;EX化させる
+		;まだEX化していなくて、EX化が可能なキャラでないと使用できない
+		SIF CFLAG:COUNT:0 == 0 && ABLE_EX_CHANGES(COUNT)
+			ITEMSALES:81 = 1
+	REND
+ENDIF
+
+;エンゲージリング（Jではコマンド：プレゼントで渡す）
+ITEMSALES:85 = 0
+
+;赤い首輪（奴隷エンド条件はここで処理）
+ITEMSALES:86 = 0
+IF TARGET > 0 && ASSI < 0 && FLAG:5 != 9 && ITEM:85 == 0 && ITEM:赤い首輪 == 0
+	SIF TALENT:淫乱 && TALENT:恋慕 && TALENT:相愛 == 0 && TALENT:服従 == 0 && CFLAG:2 >= 2500 && MARK:既成事実 >= 3 && MARK:反発感情 == 0 && (ABL:親密+ABL:欲望+ABL:奉仕精神 >= 15) && (ABL:技巧+ABL:マゾっ気+ABL:精液中毒 >= 13) && (EXP:Ｖ経験+EXP:Ａ経験 >= 200) && EXP:強制自慰経験 >= 150 && EXP:フェラ経験 >= 150 && EXP:レズ経験 < 500
+		ITEMSALES:86 = 1
+ENDIF
+
+;隷属の証
+ITEMSALES:87 = 0
+IF TARGET > 0 && ASSI < 0 && FLAG:1 < 9
+	IF TALENT:MASTER:オトコ && EXP:レズ経験 >= 1500
+		ITEMSALES:87 = 0
+	ELSEIF TALENT:淫乱 && TALENT:恋慕 && TALENT:相愛 == 0 && TALENT:服従 == 0 && MARK:既成事実 >= 3 && MARK:反発感情 == 0 && (ABL:親密+ABL:欲望 >= 8) && (ABL:技巧+ABL:奉仕精神 >= 7) && (ABL:マゾっ気 >= 2 && ABL:自慰中毒 >= 2 && ABL:精液中毒 >= 2) && (EXP:Ｖ経験+EXP:Ａ経験 >= 100) && EXP:強制自慰経験 >= 50 && EXP:フェラ経験 >= 50
+		ITEMSALES:87 = 1
+	ENDIF
+ENDIF
+
+;触手使役術
+ITEMSALES:24 = 0
+SIF F == 1 && ITEM:触手使役術 == 0
+	ITEMSALES:24 = 1
+
+;元気になる薬
+ITEMSALES:70 = 0
+IF P
+	REPEAT CHARANUM
+		SIF CFLAG:COUNT:21
+			CONTINUE
+		SIF BASE:COUNT:体力 != MAXBASE:COUNT:体力
+			ITEMSALES:70 = 1
+	REND
+ENDIF
+
+;記憶消去薬
+ITEMSALES:98 = 0
+SIF F && P
+	ITEMSALES:98 = 1
+
+;汚れ無視
+ITEMSALES:62 = 0
+SIF TALENT:MASTER:汚れ無視 == 0
+	ITEMSALES:62 = 1
+
+;サド
+ITEMSALES:63 = 0
+SIF TALENT:MASTER:サド == 0
+	ITEMSALES:63 = 1
+
+;主人がオトコかふたなりで、早漏ではない
+ITEMSALES:64 = 0
+SIF (TALENT:MASTER:ふたなり || TALENT:MASTER:オトコ) && TALENT:MASTER:早漏 == 0
+	ITEMSALES:64 = 1
+
+
+;調合知識(封印中)
+ITEMSALES:65 = 0
+SIF F && P
+	ITEMSALES:65 = 1
+
+;技巧
+ITEMSALES:60 = 0
+SIF ABL:MASTER:技巧 < 9999
+	ITEMSALES:60 = 1
+
+;撮影技能
+ITEMSALES:61 = 0
+SIF ITEM:ビデオカメラ && ABL:MASTER:撮影技能 < 9999
+	ITEMSALES:61 = 1
+;編集機材
+ITEMSALES:59 = 0
+SIF ITEM:ビデオカメラ && ITEM:59 == 0
+	ITEMSALES:59 = 1
+
+;プラカード
+ITEMSALES:46 = 0
+SIF FLAG:1 >= 1 && ITEM:46 == 0
+	ITEMSALES:46 = 1
+
+;結界操作と変身魔法
+ITEMSALES:67 = 0
+ITEMSALES:68 = 0
+SIF TALENT:MASTER:変身魔法 == 0 && F
+	ITEMSALES:67 = 1
+SIF TALENT:MASTER:結界操作 == 0 && F
+	ITEMSALES:68 = 1
+
+;83,虹の飴玉,500000,;プレイヤーの性別を変える
+ITEMSALES:83 = 0
+SIF F && P
+	ITEMSALES:83 = 1
+
+;---------------------------------------------------------
+;アイテム購入
+;---------------------------------------------------------
+@EVENTBUY
+;購入したことを分かりやすくしてみよう
+SIF BOUGHT < 25 || (BOUGHT >= 40 && BOUGHT < 60) || BOUGHT >= 70
+	PRINTFORMW ＜%ITEMNAME:BOUGHT%を購入しました＞
+SIF BOUGHT > 61 && BOUGHT < 69
+	PRINTFORMW ＜%ITEMNAME:BOUGHT%を身につけました＞
+;調教アイテムは買ったら消える
+SIF BOUGHT < 25 || BOUGHT >= 40
+	ITEMSALES:BOUGHT = 0
+;素質アイテム、キャラカードは買ったら消える
+IF (BOUGHT >= 60 && BOUGHT < 84) || BOUGHT == 98
+	ITEMSALES:BOUGHT = 0
+	ITEM:BOUGHT = 0
+ENDIF
+
+;特殊アイテム【初月の証】
+IF BOUGHT == 99
+	ITEM:BOUGHT = 1
+	PRINTFORMW 初月モードに突入しました(高レベルへのLvUPに必要な珠軽減)
+ENDIF
+
+;素質アイテム【技巧Lv】
+IF BOUGHT == 60 && ABL:MASTER:技巧 < 9999
+	;計算しやすいようにシステムでまず引かれる金額を戻しておき、購入した場合引くようにする
+	MONEY += 5000
+	
+	A = 5000
+	IF ABL:MASTER:技巧 >= 6
+		B = (ABL:MASTER:技巧 - 2) * (ABL:MASTER:技巧 - 5) / 2
+	ELSE
+		B = 1
+	ENDIF
+	C = A * B
+
+	DRAWLINE
+	IF MONEY < C
+		PRINTFORML 次のLvになるためには【技巧Lv】が{B}個必要です(合計費用 ${C})
+		PRINTFORMW お金が足りません
+		ITEMSALES:BOUGHT = 1
+		RETURN 0
+	ELSE
+		PRINTFORML ＜今の技巧Lv：{ABL:MASTER:技巧}＞
+		PRINTFORML 次のLvになるためには【技巧Lv】が{B}個必要です(合計費用 ${C})
+		PRINTFORML 購入しますか？
+		PRINTL [0] はい
+		PRINTL [1] いいえ
+		CALL ABL2_CHECK
+		PRINTFORML [2] お金が無くなるまでレベルを上げる（Lv：{(ABL:MASTER:技巧)+K}までLvUP　使用金額:${M}）
+	ENDIF
+	
+	$INPUT_LOOP
+	INPUT
+	
+	IF RESULT == 0
+		MONEY -= C
+		ABL:MASTER:技巧 += 1
+		PRINTFORMW ＜%NAME:MASTER%の技巧Lvが1つ上がった　今の技巧Lv：{ABL:MASTER:技巧}＞
+		SIF ABL:MASTER:技巧 < 9999
+			ITEMSALES:BOUGHT = 1
+	ELSEIF RESULT == 1
+		ITEMSALES:BOUGHT = 1
+		RETURN 0
+	ELSEIF RESULT == 2
+		MONEY -= M
+		ABL:MASTER:技巧 += K
+		PRINTFORMW ＜%NAME:MASTER%の技巧Lvが{K}上がった　今の技巧Lv：{ABL:MASTER:技巧}＞
+		SIF ABL:MASTER:技巧 < 9999
+			ITEMSALES:BOUGHT = 1
+	ELSE
+		PRINTFORML 正しい値を入力してください
+		GOTO INPUT_LOOP
+	ENDIF
+	RETURN 1
+ENDIF
+;主人専用能力アップアイテム【撮影技能】
+IF BOUGHT == 61 && ABL:MASTER:撮影技能 < 9999
+	;計算しやすいようにシステムでまず引かれる金額を戻しておき、購入した場合引くようにする
+	MONEY += 30000
+	
+	A = 30000
+	IF ABL:MASTER:撮影技能 >= 9
+		B = (ABL:MASTER:撮影技能 - 2) * (ABL:MASTER:撮影技能 - 5) / 12
+	ELSE
+		B = 1
+	ENDIF
+	C = A * B
+
+	DRAWLINE
+	IF MONEY < C
+		PRINTFORML 次のLvになるためには【撮影技能】が{B}個必要です(合計費用 ${C})
+		PRINTFORMW お金が足りません
+		ITEMSALES:BOUGHT = 1
+		RETURN 0
+	ELSE
+		PRINTFORML ＜今の撮影技能Lv：{ABL:MASTER:撮影技能}＞
+		PRINTFORML 次のLvになるためには【撮影技能】が{B}個必要です(合計費用 ${C})
+		PRINTFORML 購入しますか？
+		PRINTL [0] はい
+		PRINTL [1] いいえ
+		CALL ABL91_CHECK
+		PRINTFORML [2] お金が無くなるまでレベルを上げる（Lv：{(ABL:MASTER:撮影技能)+K}までLvUP　使用金額:${M}）
+	ENDIF
+	
+	$INPUT_LOOP_ASA
+	INPUT
+	
+	IF RESULT == 0
+		MONEY -= C
+		ABL:MASTER:撮影技能 += 1
+		PRINTFORMW ＜%NAME:MASTER%の撮影技能Lvが1つ上がった　今の撮影技能Lv：{ABL:MASTER:撮影技能}＞
+		SIF ABL:MASTER:撮影技能 < 9999
+			ITEMSALES:BOUGHT = 1
+	ELSEIF RESULT == 1
+		ITEMSALES:BOUGHT = 1
+		RETURN 0
+	ELSEIF RESULT == 2
+		MONEY -= M
+		ABL:MASTER:撮影技能 += K
+		PRINTFORMW ＜%NAME:MASTER%の撮影技能Lvが{K}上がった　今の撮影技能Lv：{ABL:MASTER:撮影技能}＞
+		SIF ABL:MASTER:撮影技能 < 9999
+			ITEMSALES:BOUGHT = 1
+	ELSE
+		PRINTFORML 正しい値を入力してください
+		GOTO INPUT_LOOP
+	ENDIF
+	RETURN 1
+ENDIF
+;素質アイテム【汚れ無視】
+SIF BOUGHT == 62
+	TALENT:MASTER:汚れ無視 = 1
+;素質アイテム【サド】
+SIF BOUGHT == 63
+	TALENT:MASTER:サド = 1
+;素質アイテム【早漏】
+SIF BOUGHT == 64
+	TALENT:MASTER:早漏 = 1
+;素質アイテム【調合知識】
+SIF BOUGHT == 65
+	TALENT:MASTER:調合知識 = 1
+;素質アイテム【禁断の知識】
+SIF BOUGHT == 66
+	TALENT:MASTER:禁断の知識 = 1
+;素質アイテム【変身魔法を使う程度の能力】
+SIF BOUGHT == 67
+	TALENT:MASTER:変身魔法 = 1
+;素質アイテム【結界を操る程度の能力】
+SIF BOUGHT == 68
+	TALENT:MASTER:結界操作 = 1
+;性転換
+IF BOUGHT == 83
+	PRINTFORML %CALLNAME:MASTER%の性別を反転できます。購入しますか？
+	PRINTL [0] はい
+	PRINTL [1] いいえ
+
+	$INPUT_LOOP3
+	INPUT
+	
+	IF RESULT != 0 && RESULT != 1
+		PRINTFORML 正しい値を入力してください
+		GOTO INPUT_LOOP3
+	ENDIF
+
+	IF RESULT == 0
+		;虹の飴玉(性転換)
+		CALL USE_DRUG_83
+	ELSE
+		;払い戻し
+		MONEY += 500000
+		ITEMSALES:BOUGHT = 1
+		RETURN 0
+	ENDIF
+	ITEMSALES:BOUGHT = 1
+	RETURN 1
+ENDIF
+
+SIF BOUGHT == 25 || BOUGHT == 26 || BOUGHT == 27 || BOUGHT == 28 || BOUGHT == 29 || BOUGHT == 30 || BOUGHT == 31 || BOUGHT == 33 || BOUGHT == 34 || BOUGHT == 35
+	CALL BUY_PLURAL
+SIF BOUGHT == 70 || BOUGHT == 71 || BOUGHT == 72 || BOUGHT == 73 || BOUGHT == 74 || BOUGHT == 75 || BOUGHT == 76 || BOUGHT == 77 || BOUGHT == 78 || BOUGHT == 79 || BOUGHT == 80 || BOUGHT == 85 || BOUGHT == 86 || BOUGHT == 87 || BOUGHT == 98
+	CALL USE_ITEM
+
+;---------------------------------------------------------
+;技巧必要金額チェック
+;---------------------------------------------------------
+@ABL2_CHECK
+VARSET LOCAL, 0
+VARSET K, 0
+VARSET M, 0
+LOCAL:1 = ABL:MASTER:技巧
+LOCAL:2 = 9999 - ABL:MASTER:技巧
+
+FOR LOCAL, 0, LOCAL:2
+	IF ABL:MASTER:技巧 >= 6
+		B = (ABL:MASTER:技巧 - 2) * (ABL:MASTER:技巧 - 5) / 2
+	ELSE
+		B = 1
+	ENDIF
+	LOCAL:3 = 5000 * B
+	SIF M + LOCAL:3 > MONEY
+		BREAK
+	M += LOCAL:3
+	K += 1
+	ABL:MASTER:技巧 += 1
+NEXT
+
+ABL:MASTER:技巧 = LOCAL:1
+
+;---------------------------------------------------------
+;撮影技能必要金額チェック
+;---------------------------------------------------------
+@ABL91_CHECK
+VARSET LOCAL, 0
+VARSET K, 0
+VARSET M, 0
+LOCAL:1 = ABL:MASTER:撮影技能
+LOCAL:2 = 9999 - ABL:MASTER:撮影技能
+
+FOR LOCAL, 0, LOCAL:2
+	IF ABL:MASTER:撮影技能 >= 9
+		B = (ABL:MASTER:撮影技能 - 2) * (ABL:MASTER:撮影技能 - 5) / 12
+	ELSE
+		B = 1
+	ENDIF
+	LOCAL:3 = 30000 * B
+	SIF M + LOCAL:3 > MONEY
+		BREAK
+	M += LOCAL:3
+	K += 1
+	ABL:MASTER:撮影技能 += 1
+NEXT
+
+ABL:MASTER:撮影技能 = LOCAL:1
+
+;---------------------------------------------------------
+;複数個所持可能なアイテムについて、同時購入個数を選択
+;---------------------------------------------------------
+@BUY_PLURAL
+;現在の購入可能数、Bは所持可能最大数（現在100個）、Cは所持金によるもの
+;普通に99個までしか買える仕様になってないし、最大数は99個と判断
+;ここに飛んで来た時点で一個購入してしまってるので、払い戻し処理をしておく
+MONEY += ITEMPRICE:BOUGHT
+ITEM:BOUGHT -= 1
+DRAWLINE
+PRINTFORML %ITEMNAME:BOUGHT%をいくつ買いますか？ (現在 {ITEM:BOUGHT}個所持)
+CALL INPUT_MANY(0, MIN(MONEY/ITEMPRICE:BOUGHT, 99 - ITEM:BOUGHT))
+IF RESULT == 0
+	RETURN 0
+ELSEIF RESULT == 1
+	PRINTFORMW ＜%ITEMNAME:BOUGHT%を購入しました＞
+	ITEM:BOUGHT += RESULT
+	MONEY -= ITEMPRICE:BOUGHT*RESULT
+	RETURN 0
+ELSE
+	PRINTFORMW ＜%ITEMNAME:BOUGHT%を{RESULT}個購入しました＞
+	ITEM:BOUGHT += RESULT
+	MONEY -= ITEMPRICE:BOUGHT*RESULT
+	RETURN 0
+ENDIF
+
+;アイテム使用
+@USE_ITEM
+DRAWLINE
+PRINTFORM %ITEMNAME:BOUGHT%:
+;アイテムの効果を表示する
+SIF BOUGHT == 70
+	PRINTL 体力を回復します
+SIF BOUGHT == 71
+	PRINTL ふたなりになります
+SIF BOUGHT == 72
+	PRINTL ふたなりを消去します
+SIF BOUGHT == 73
+	PRINTL 母乳体質になります
+SIF BOUGHT == 74
+	PRINTL 処女膜が再生します
+SIF BOUGHT == 75
+	PRINTL 胸を大きくします
+SIF BOUGHT == 76
+	PRINTL 胸を小さくします
+SIF BOUGHT == 77
+	PRINTL 母乳が出なくなります
+SIF BOUGHT == 78
+	PRINTL お漏らし癖が治ります
+SIF BOUGHT == 79
+	PRINTL 強制的に卵を産ませます
+SIF BOUGHT == 80
+	PRINTL 成長させます
+SIF BOUGHT == 81
+	PRINTL EX化させます
+SIF BOUGHT == 85
+	PRINTL 自分の気持ちを伝えます
+SIF BOUGHT == 86
+	PRINTL 最高の妻にして奴隷である証を与えます
+SIF BOUGHT == 87
+	PRINTL 烙印を押して自分の妾にします
+SIF BOUGHT == 98
+	PRINTL 調教の記憶を消去します
+
+IF BOUGHT == 86 || BOUGHT == 87
+	PRINTL 誰に与えますか？
+ELSE
+	PRINTL 誰に使いますか？
+ENDIF
+
+;改行用変数
+LOCAL:0 = 0
+REPEAT CHARANUM
+	TFLAG:COUNT = 0
+	;別れ中のキャラには使えない
+	SIF CFLAG:COUNT:21
+		CONTINUE
+	SIF BOUGHT == 70 && BASE:COUNT:体力 == MAXBASE:COUNT:体力
+		CONTINUE
+	SIF BOUGHT == 71 && (TALENT:COUNT:ふたなり || TALENT:COUNT:オトコ)
+		CONTINUE
+	SIF BOUGHT == 71 && F == 0 && TALENT:COUNT:調合知識 == 0 && TALENT:COUNT:不思議な根 == 0 && TALENT:COUNT:具現 == 0
+		CONTINUE
+	SIF BOUGHT == 72 && (TALENT:COUNT:ふたなり == 0 || TALENT:COUNT:オトコ)
+		CONTINUE
+	SIF BOUGHT == 73 && (TALENT:COUNT:母乳体質 || TALENT:COUNT:オトコ)
+		CONTINUE
+	IF BOUGHT == 74 && (TALENT:COUNT:処女 || TALENT:COUNT:オトコ)
+		SIF NO:COUNT != 14 || CFLAG:COUNT:0 || NAME_CSV(NO:COUNT, 1) != "ちびアリス"
+			CONTINUE
+		;主人時は不可
+		SIF COUNT == 0
+			CONTINUE
+	ENDIF
+	SIF BOUGHT == 75 && (TALENT:COUNT:巨乳 || TALENT:COUNT:オトコ)
+		CONTINUE
+	SIF BOUGHT == 76 && (TALENT:COUNT:貧乳 || TALENT:COUNT:オトコ)
+		CONTINUE
+	SIF BOUGHT == 77 && (TALENT:COUNT:母乳体質 == 0 || TALENT:COUNT:オトコ)
+		CONTINUE
+	SIF BOUGHT == 78 && TALENT:COUNT:おもらし癖 == 0
+		CONTINUE
+	SIF BOUGHT == 79 && (TALENT:COUNT:オトコ || (TALENT:COUNT:妊娠 == 0 && EXP:COUNT:産卵経験 == 0) || BASE:COUNT:体力 < 1000)
+		CONTINUE
+	SIF BOUGHT == 80 && TALENT:COUNT:小柄体型 == 0
+		CONTINUE
+	SIF BOUGHT == 81 && (CFLAG:COUNT:0 || ABLE_EX_CHANGES(COUNT) == 0)
+		CONTINUE
+	SIF BOUGHT == 85 && COUNT != TARGET
+		CONTINUE
+	SIF BOUGHT == 86 && COUNT != TARGET
+		CONTINUE
+	SIF BOUGHT == 87 && COUNT != TARGET
+		CONTINUE
+	SIF BOUGHT == 98 && COUNT == 0
+		CONTINUE
+	PRINTFORM [{COUNT,2}]%NAME:COUNT,16,LEFT%　
+	IF BOUGHT == 70
+		;元気になる薬は体力を表示して1行表示
+		PRINTFORML 体力({BASE:COUNT:体力,4}/{MAXBASE:COUNT:体力,4})
+		TFLAG:COUNT = 1
+		CONTINUE
+	ENDIF
+	;SIF CFLAG:COUNT:1 == 2
+		;PRINT 助手可
+	
+	;3行表示
+	LOCAL:0 += 1
+	IF LOCAL:0 == 3
+		PRINTL 
+		LOCAL:0 = 0
+	ENDIF
+	TFLAG:COUNT = 1
+REND
+SIF LOCAL:0 != 0
+	PRINTL 
+IF CHARANUM <= 100
+	PRINTL [100] 戻る
+ELSE
+	PRINTL [1000][-1] 戻る
+ENDIF
+
+$INPUT_LOOP
+INPUT
+IF RESULT == -1 || (CHARANUM <= 100 && RESULT == 100) || RESULT == 1000
+	ITEM:BOUGHT = 0
+	;払い戻し
+	MONEY += ITEMPRICE:BOUGHT
+	RETURN 0
+ELSE
+	IF RESULT < 0 || RESULT >= CHARANUM
+		PRINTFORML 正しい値を入力してください
+		GOTO INPUT_LOOP
+	ELSEIF TFLAG:RESULT == 0
+		PRINTFORML 正しい値を入力してください
+		GOTO INPUT_LOOP
+	ENDIF
+ENDIF
+
+;TFLAG初期化
+TFLAG:13 = 0
+TFLAG:600 = 0
+;体力回復
+IF BOUGHT == 70
+	PRINTFORMW ＜%NAME:RESULT%の体力が回復した＞
+	BASE:RESULT:体力 += 300
+	SIF BASE:RESULT:体力 > MAXBASE:RESULT:体力
+		BASE:RESULT:体力 = MAXBASE:RESULT:体力
+	TFLAG:600 = 50
+ENDIF
+;ふたなり化
+IF BOUGHT == 71
+	PRINTFORMW ＜%NAME:RESULT%をふたなり化した＞
+	TALENT:RESULT:不思議な根 = 0
+	TALENT:RESULT:具現 = 0
+	TALENT:RESULT:ふたなり = 1
+	TFLAG:600 = 51
+ENDIF
+;ふたなりを消去
+IF BOUGHT == 72
+	PRINTFORMW ＜%NAME:RESULT%はふたなりではなくなった＞
+	TALENT:RESULT:ふたなり = 0
+	TFLAG:600 = 52
+ENDIF
+;母乳体質
+IF BOUGHT == 73
+	PRINTFORMW ＜%NAME:RESULT%は母乳が出るようになった＞
+	TALENT:RESULT:母乳体質 = 1
+	TFLAG:600 = 53
+ENDIF
+;処女膜再生
+IF BOUGHT == 74
+	LOCAL = RESULT
+	;条件が揃っているならアリスをSP化(東方専用)
+	IF 0
+		RESULT = LOCAL
+		CALL ADD_SP_ALICE
+	ELSE
+		PRINTFORMW ＜%NAME:LOCAL%の処女膜が再生された＞
+		TALENT:LOCAL:処女 = 1
+		;素質発覚
+		SIF FLAG:2 == 1 && (CFLAG:60 & 1) == 0
+			CFLAG:60 |= 1
+	ENDIF
+	TFLAG:600 = 54
+ENDIF
+;豊乳化
+IF BOUGHT == 75
+	;素質発覚（隠し様がないね）
+	SIF FLAG:2 == 1 && (CFLAG:RESULT:60 & 32) == 0
+			CFLAG:RESULT:60 |= 32
+	IF TALENT:RESULT:貧乳
+		PRINTFORMW ＜%NAME:RESULT%の胸が大きくなった＞
+		TALENT:RESULT:貧乳 = 0
+	ELSE
+		IF TALENT:RESULT:小柄体型
+			PRINTFORMW ＜%NAME:RESULT%の胸が体に不釣合いなまでに大きくなった＞
+		ELSE
+			PRINTFORMW ＜%NAME:RESULT%の胸がはち切れんばかりの大きさになった＞
+		ENDIF
+		TALENT:RESULT:巨乳 = 1
+	ENDIF
+	TFLAG:600 = 55
+ENDIF
+;虚乳
+IF BOUGHT == 76
+	;素質発覚（隠し様がないね）
+	SIF FLAG:2 == 1 && (CFLAG:RESULT:60 & 32) == 0
+			CFLAG:RESULT:60 |= 32
+	IF TALENT:RESULT:巨乳
+		PRINTFORMW ＜%NAME:RESULT%の胸が人並みに小さくなった＞
+		PRINTFORMW %NAME:RESULT%はショックを受けているようだ
+
+		TALENT:RESULT:巨乳 = 0
+	ELSE
+		IF TALENT:RESULT:小柄体型
+			PRINTFORMW ＜%NAME:RESULT%の胸が見かけ相当に薄くなった＞
+			PRINTFORMW %NAME:RESULT%は少々ショックを受けているようだ
+		ELSE
+			PRINTFORMW ＜%NAME:RESULT%の胸が極端に薄くなった＞
+			PRINTFORMW %NAME:RESULT%は愕然としている
+		ENDIF
+		TALENT:RESULT:貧乳 = 1
+	ENDIF
+	TFLAG:600 = 56
+ENDIF
+;母乳治療
+IF BOUGHT == 77
+	PRINTFORMW ＜%NAME:RESULT%は母乳が出なくなった＞
+	TALENT:RESULT:母乳体質 = 0
+	TFLAG:600 = 57
+ENDIF
+;お漏らし治療
+IF BOUGHT == 78
+	PRINTFORMW ＜%NAME:RESULT%のお漏らし癖が治った＞
+	TALENT:RESULT:おもらし癖 = 0
+	EXP:RESULT:放尿経験 = 0
+	TFLAG:600 = 58
+ENDIF
+;卵を産ませる
+IF BOUGHT == 79
+	A = RESULT
+	PRINTFORML ＜%NAME:A%に卵を産ませますか？＞
+	PRINTW ※日付が数日飛びます
+	DRAWLINE
+	PRINTL [0] - 今はやめておく
+	PRINTL [1] - 産ませる
+	DRAWLINE
+	$INPUT_LOOP_EGG
+	INPUT
+	IF RESULT == 1
+		TARGET = A
+		CALL LAY_EGG
+	ELSEIF RESULT == 0
+		MONEY += 20000
+		RETURN 0
+	ELSE
+		PRINTFORML 正しい値を入力してください
+		GOTO INPUT_LOOP_EGG
+	ENDIF
+ENDIF
+
+;成長薬
+IF BOUGHT == 80
+	PRINTFORMW ＜%NAME:RESULT%の体が成長した＞
+	TALENT:RESULT:小柄体型 = 0
+	;剃毛パッチ追加
+	IF MAXBASE:RESULT:陰毛 == 0
+		MAXBASE:RESULT:陰毛 = 300
+	ELSEIF MAXBASE:RESULT:陰毛 == 300
+		MAXBASE:RESULT:陰毛 = 1000
+	ENDIF
+	;ここまで
+	IF TALENT:RESULT:貧乳
+		PRINTFORMW ＜%NAME:RESULT%の胸が大きくなった＞
+		TALENT:RESULT:貧乳 = 0
+	ELSEIF TALENT:RESULT:巨乳 == 0
+		PRINTFORMW ＜%NAME:RESULT%の胸がはち切れんばかりの大きさになった＞
+		TALENT:RESULT:巨乳 = 1
+	ENDIF
+ENDIF
+
+;EX化
+IF BOUGHT == 81
+
+ENDIF
+
+;記憶消去
+IF BOUGHT == 98
+	PRINTFORMW ＜%NAME:RESULT%は%CALLNAME:MASTER%との記憶を失った＞
+	R = RESULT
+	ADDCHARA NO:R
+
+	TARGET = CHARANUM-1
+
+	;口上用に一時的に素質追加処理
+	TALENT:TARGET:恋慕 = TALENT:R:恋慕
+	TALENT:TARGET:親愛 = TALENT:R:親愛
+	TALENT:TARGET:相愛 = TALENT:R:相愛
+	TALENT:TARGET:育児中 = TALENT:R:育児中
+	TALENT:TARGET:淫乱 = TALENT:R:淫乱
+	TALENT:TARGET:淫壷 = TALENT:R:淫壷
+	TALENT:TARGET:淫核 = TALENT:R:淫核
+	TALENT:TARGET:尻穴狂い = TALENT:R:尻穴狂い
+	TALENT:TARGET:淫乳 = TALENT:R:淫乳
+	TALENT:TARGET:キス魔 = TALENT:R:キス魔
+	TALENT:TARGET:マゾ = TALENT:R:マゾ
+	TALENT:TARGET:サド = TALENT:R:サド
+	MARK:TARGET:苦痛依存 = MARK:R:苦痛依存
+	MARK:TARGET:快楽依存 = MARK:R:快楽依存
+	MARK:TARGET:既成事実 = MARK:R:既成事実
+	MARK:TARGET:反発感情 = MARK:R:反発感情
+
+	;融通が利くように口上はここに
+	TFLAG:600 = 59
+	CALL KOJO_JUN
+
+	;口上用に一時的に追加した素質の消去処理
+	TALENT:TARGET:恋慕 = 0
+	TALENT:TARGET:親愛 = 0
+	TALENT:TARGET:相愛 = 0
+	TALENT:TARGET:育児中 = 0
+	TALENT:TARGET:淫乱 = 0
+	TALENT:TARGET:淫壷 = 0
+	TALENT:TARGET:淫核 = 0
+	TALENT:TARGET:尻穴狂い = 0
+	TALENT:TARGET:淫乳 = 0
+	TALENT:TARGET:キス魔 = 0
+	TALENT:TARGET:マゾ = 0
+	TALENT:TARGET:サド = 0
+	MARK:TARGET:苦痛依存 = 0
+	MARK:TARGET:快楽依存 = 0
+	MARK:TARGET:既成事実 = 0
+	MARK:TARGET:反発感情 = 0
+
+	;汎用キャラは保存素質追加
+	IF NO:TARGET == 99
+		TALENT:TARGET:臆病 = TALENT:R:臆病
+		TALENT:TARGET:反抗的 = TALENT:R:反抗的
+		TALENT:TARGET:気丈 = TALENT:R:気丈
+		TALENT:TARGET:素直 = TALENT:R:素直
+		TALENT:TARGET:大人しい = TALENT:R:大人しい
+		TALENT:TARGET:プライド高い = TALENT:R:プライド高い
+		TALENT:TARGET:生意気 = TALENT:R:生意気
+		TALENT:TARGET:プライド低い = TALENT:R:プライド低い
+		TALENT:TARGET:ツンデレ = TALENT:R:ツンデレ
+		TALENT:TARGET:自制心 = TALENT:R:自制心
+		TALENT:TARGET:無関心 = TALENT:R:無関心
+		TALENT:TARGET:感情乏しい = TALENT:R:感情乏しい
+		TALENT:TARGET:好奇心 = TALENT:R:好奇心
+		TALENT:TARGET:保守的 = TALENT:R:保守的
+		TALENT:TARGET:楽観的 = TALENT:R:楽観的
+		TALENT:TARGET:悲観的 = TALENT:R:悲観的
+		TALENT:TARGET:一線越えない = TALENT:R:一線越えない
+		TALENT:TARGET:目立ちたがり = TALENT:R:目立ちたがり
+		TALENT:TARGET:貞操観念 = TALENT:R:貞操観念
+		TALENT:TARGET:貞操無頓着 = TALENT:R:貞操無頓着
+		TALENT:TARGET:抑圧 = TALENT:R:抑圧
+		TALENT:TARGET:解放 = TALENT:R:解放
+		TALENT:TARGET:抵抗 = TALENT:R:抵抗
+		TALENT:TARGET:恥じらい = TALENT:R:恥じらい
+		TALENT:TARGET:恥薄い = TALENT:R:恥薄い
+		TALENT:TARGET:弱味 = TALENT:R:弱味
+		TALENT:TARGET:習得早い = TALENT:R:習得早い
+		TALENT:TARGET:習得遅い = TALENT:R:習得遅い
+		TALENT:TARGET:舌使い = TALENT:R:舌使い
+		TALENT:TARGET:針さばき = TALENT:R:針さばき
+		TALENT:TARGET:猫舌 = TALENT:R:猫舌
+		TALENT:TARGET:調合知識 = TALENT:R:調合知識
+		TALENT:TARGET:自慰しやすい = TALENT:R:自慰しやすい
+		TALENT:TARGET:汚臭鈍感 = TALENT:R:汚臭鈍感
+		TALENT:TARGET:汚臭敏感 = TALENT:R:汚臭敏感
+		TALENT:TARGET:献身的 = TALENT:R:献身的
+		TALENT:TARGET:汚れ無視 = TALENT:R:汚れ無視
+		TALENT:TARGET:快感に素直 = TALENT:R:快感に素直
+		TALENT:TARGET:快感の否定 = TALENT:R:快感の否定
+		TALENT:TARGET:中毒しやすい = TALENT:R:中毒しやすい
+		TALENT:TARGET:倒錯的 = TALENT:R:倒錯的
+		TALENT:TARGET:両刀 = TALENT:R:両刀
+		TALENT:TARGET:男嫌い = TALENT:R:男嫌い
+		TALENT:TARGET:サド = TALENT:R:サド
+		TALENT:TARGET:嫉妬 = TALENT:R:嫉妬
+		TALENT:TARGET:小悪魔 = TALENT:R:小悪魔
+		TALENT:TARGET:鼓舞 = TALENT:R:鼓舞
+		TALENT:TARGET:幼稚 = TALENT:R:幼稚
+	ENDIF
+	TALENT:TARGET:処女 = TALENT:R:処女
+	TALENT:TARGET:痛みに弱い = TALENT:R:痛みに弱い
+	TALENT:TARGET:痛みに強い = TALENT:R:痛みに強い
+	TALENT:TARGET:濡れやすい = TALENT:R:濡れやすい
+	TALENT:TARGET:濡れにくい = TALENT:R:濡れにくい
+	TALENT:TARGET:薬毒耐性 = TALENT:R:薬毒耐性
+	TALENT:TARGET:小柄体型 = TALENT:R:小柄体型
+	TALENT:TARGET:Ｃ鈍感 = TALENT:R:Ｃ鈍感
+	TALENT:TARGET:Ｃ敏感 = TALENT:R:Ｃ敏感
+	TALENT:TARGET:Ｖ鈍感 = TALENT:R:Ｖ鈍感
+	TALENT:TARGET:Ｖ敏感 = TALENT:R:Ｖ敏感
+	TALENT:TARGET:Ａ鈍感 = TALENT:R:Ａ鈍感
+	TALENT:TARGET:Ａ敏感 = TALENT:R:Ａ敏感
+	TALENT:TARGET:Ｂ鈍感 = TALENT:R:Ｂ鈍感
+	TALENT:TARGET:Ｂ敏感 = TALENT:R:Ｂ敏感
+	TALENT:TARGET:貧乳 = TALENT:R:貧乳
+	TALENT:TARGET:巨乳 = TALENT:R:巨乳
+	TALENT:TARGET:回復早い = TALENT:R:回復早い
+	TALENT:TARGET:回復遅い = TALENT:R:回復遅い
+	TALENT:TARGET:魅力 = TALENT:R:魅力
+	TALENT:TARGET:吸血鬼 = TALENT:R:吸血鬼
+	TALENT:TARGET:日光浴 = TALENT:R:日光浴
+	TALENT:TARGET:月光浴 = TALENT:R:月光浴
+	TALENT:TARGET:不思議な根 = TALENT:R:不思議な根
+	TALENT:TARGET:ふたなり = TALENT:R:ふたなり
+	TALENT:TARGET:オトコ = TALENT:R:オトコ
+	TALENT:TARGET:動物耳 = TALENT:R:動物耳
+	;被写経験がリセットされないようなので人気はそのまま
+	TALENT:TARGET:人気 = TALENT:R:人気
+	TALENT:TARGET:蓬莱人 = TALENT:R:蓬莱人
+	TALENT:TARGET:母乳体質 = TALENT:R:母乳体質
+	TALENT:TARGET:妊娠 = TALENT:R:妊娠
+	TALENT:TARGET:パートナー = TALENT:R:パートナー
+
+	TALENT:TARGET:羽 = TALENT:R:羽
+	TALENT:TARGET:角 = TALENT:R:角
+	TALENT:TARGET:しっぽ = TALENT:R:しっぽ
+	TALENT:TARGET:眷属 = TALENT:R:眷属
+	
+	
+	EXP:TARGET:Ｖ経験 = EXP:R:Ｖ経験
+	EXP:TARGET:Ａ経験 = EXP:R:Ａ経験
+	EXP:TARGET:絶頂経験 = EXP:R:絶頂経験
+	EXP:TARGET:射精経験 = EXP:R:射精経験
+	EXP:TARGET:自慰経験 = EXP:R:自慰経験
+	EXP:TARGET:強制自慰経験 = EXP:R:強制自慰経験
+	EXP:TARGET:精液経験 = EXP:R:精液経験
+	EXP:TARGET:奉仕快楽経験 = EXP:R:奉仕快楽経験
+	EXP:TARGET:フェラ経験 = EXP:R:フェラ経験
+	EXP:TARGET:愛情経験 = EXP:R:愛情経験
+	EXP:TARGET:苦痛快楽経験 = EXP:R:苦痛快楽経験
+	EXP:TARGET:放尿経験 = EXP:R:放尿経験
+	EXP:TARGET:Ａ快楽経験 = EXP:R:Ａ快楽経験
+	EXP:TARGET:レズ経験 = EXP:R:レズ経験
+	EXP:TARGET:ＢＬ経験 = EXP:R:ＢＬ経験
+	EXP:TARGET:異常経験 = EXP:R:異常経験
+	EXP:TARGET:緊縛経験 = EXP:R:緊縛経験
+	EXP:TARGET:Ｖ拡張経験 = EXP:R:Ｖ拡張経験
+	EXP:TARGET:Ａ拡張経験 = EXP:R:Ａ拡張経験
+	EXP:TARGET:噴乳経験 = EXP:R:噴乳経験
+	EXP:TARGET:触手経験 = EXP:R:触手経験
+	EXP:TARGET:吸血経験 = EXP:R:吸血経験
+	EXP:TARGET:産卵経験 = EXP:R:産卵経験
+	EXP:TARGET:出産経験 = EXP:R:出産経験
+	EXP:TARGET:家事経験 = EXP:R:家事経験
+	EXP:TARGET:撮影経験 = EXP:R:撮影経験
+	EXP:TARGET:被写経験 = EXP:R:被写経験
+	EXP:TARGET:歌唱経験 = EXP:R:歌唱経験
+	ABL:TARGET:Ｃ感覚 = ABL:R:Ｃ感覚
+	ABL:TARGET:Ｖ感覚 = ABL:R:Ｖ感覚
+	ABL:TARGET:Ａ感覚 = ABL:R:Ａ感覚
+	ABL:TARGET:Ｂ感覚 = ABL:R:Ｂ感覚
+	
+	BASE:TARGET:体力 = BASE:R:体力
+	MAXBASE:TARGET:体力 = MAXBASE:R:体力
+;	BASE:TARGET:気力 = BASE:R:気力
+;	MAXBASE:TARGET:気力 = MAXBASE:R:気力
+	MAXBASE:TARGET:射精 = MAXBASE:R:射精
+	MAXBASE:TARGET:母乳 = MAXBASE:R:母乳
+	BASE:TARGET:耐力 = BASE:R:耐力
+	MAXBASE:TARGET:耐力 = MAXBASE:R:耐力
+	BASE:TARGET:魔力 = BASE:R:魔力
+	MAXBASE:TARGET:魔力 = MAXBASE:R:魔力
+	
+	
+	CFLAG:TARGET:15 = CFLAG:R:15
+	CFLAG:TARGET:17 = CFLAG:R:17
+	CFLAG:TARGET:18 = CFLAG:R:18
+	CFLAG:TARGET:19 = CFLAG:R:19
+	CFLAG:TARGET:20 = CFLAG:R:20
+	;加入した時ではなく記憶を消した時の異常経験の値を入れるように
+	CFLAG:TARGET:22 = EXP:R:異常経験
+	CFLAG:TARGET:81 = CFLAG:R:81
+	CFLAG:TARGET:110 = CFLAG:R:110
+	CFLAG:TARGET:111 = CFLAG:R:111
+	
+	;妊娠関連
+	MARK:TARGET:89 = MARK:R:89
+	MARK:TARGET:90 = MARK:R:90
+	
+	;月経
+	CFLAG:TARGET:33 = CFLAG:R:33
+	TALENT:TARGET:危険日 = TALENT:R:危険日
+	TALENT:TARGET:生理 = TALENT:R:生理
+
+	TALENT:TARGET:キス未経験 = 1
+	;記憶消去回数
+	EXP:TARGET:記憶消去経験 = EXP:R:記憶消去経験 + 1
+	CFLAG:32 = 0
+	;口上のバージョン情報も引き継がせる
+	CFLAG:R:KOJO_VERSION = CFLAG:TARGET:KOJO_VERSION
+	;恋慕
+	SIF TALENT:R:恋慕
+		CFLAG:TARGET:32 |= 1
+	;親愛
+	SIF TALENT:R:親愛
+		CFLAG:TARGET:32 |= 2
+	;相愛
+	SIF TALENT:R:相愛
+		CFLAG:TARGET:32 |= 4
+	;恋人
+	SIF TALENT:R:育児中
+		CFLAG:TARGET:32 |= 8
+	;淫乱
+	SIF TALENT:R:淫乱
+		CFLAG:TARGET:32 |= 16
+	;淫壷
+	SIF TALENT:R:淫壷
+		CFLAG:TARGET:32 |= 32
+	;淫核
+	SIF TALENT:R:淫核
+		CFLAG:TARGET:32 |= 64
+	;尻穴狂い
+	SIF TALENT:R:尻穴狂い
+		CFLAG:TARGET:32 |= 128
+	;淫乳
+	SIF TALENT:R:淫乳
+		CFLAG:TARGET:32 |= 256
+	;キス魔
+	SIF TALENT:R:キス魔
+		CFLAG:TARGET:32 |= 512
+	;マゾ
+	SIF TALENT:R:マゾ
+		CFLAG:TARGET:32 |= 1024
+	;サド
+	SIF TALENT:R:サド
+		CFLAG:TARGET:32 |= 2048
+	;苦痛依存Lv3
+	SIF MARK:R:苦痛依存 == 3
+		CFLAG:TARGET:32 |= 4096
+	;快楽依存Lv3
+	SIF MARK:R:快楽依存 == 3
+		CFLAG:TARGET:32 |= 8192
+	;既成事実Lv3
+	SIF MARK:R:既成事実 == 3
+		CFLAG:TARGET:32 |= 16384
+	;反発感情Lv3
+	SIF MARK:R:反発感情 == 3
+		CFLAG:TARGET:32 |= 32768
+	DELCHARA R
+	TARGET = CHARANUM-1
+	;助手の記憶を消すと分裂するので助手無しに
+	SIF TARGET == ASSI
+		ASSI = -1
+	RETURN 0
+ENDIF
+
+;単体エンド
+IF BOUGHT == 85
+	PRINTFORMW %NAME:MASTER%は%NAME:TARGET%の左手を引き寄せると、その薬指に指輪をはめてやった
+	TFLAG:13 = 7
+	CALL SELF_KOJO
+	PRINTFORMW %NAME:TARGET%は頬を染めて%NAME:MASTER%の気持ちを受け入れる旨を伝えた
+
+	;一線越えない消滅
+	IF TALENT:一線越えない
+		PRINTFORMW その顔は今までに無く幸福に満ち、すべてを吹っ切ったように見えた
+		PRINTFORMW %NAME:TARGET%は[%TALENTNAME:27%]を失った
+		TALENT:一線越えない = 0
+	ENDIF
+	PRINTFORMW %NAME:TARGET%と寄り添い、長い間抱擁を交し合っていた……
+	;相愛取得
+	IF TALENT:相愛 == 0
+		PRINTFORMW %NAME:TARGET%は[%TALENTNAME:89%]を得た
+		TALENT:相愛 = 1
+	ENDIF
+	;売却不可フラグ
+	CFLAG:7 = 1
+	WAIT
+
+	IF FLAG:1 == 9
+		;FLAG:1が9のときは特殊ハーレムエンドへ。
+		;“IF FLAG:1 == 9”を奴隷エンドと分けることは可能
+		;烙印9＋エンゲージのハーレムエンドはIF ITEM:85で仕分けすればいけるか？
+		CALL SLAVE_ENDING
+	ELSE
+		CALL SINGLE_ENDING
+	ENDIF
+;	IF FLAG:5 != 9
+;		PRINTFORMW ―――単体エンド条件達成―――
+;		PRINTFORMW …………
+;		PRINTFORMW ………
+;		PRINTFORMW ……
+;		CALL GAME_CONTINUE
+;	ENDIF
+ENDIF
+
+;奴隷エンド
+IF BOUGHT == 86
+	PRINTFORMW %NAME:MASTER%は%NAME:TARGET%の体を引き寄せると、その首に赤い首輪をかけてやった
+	TFLAG:13 = 14
+	CALL SELF_KOJO
+	PRINTFORML %NAME:TARGET%は呆けたような表情を浮かべたものの、我に帰ると%NAME:MASTER%にしなだれかかり
+	PRINTFORMW とろんとした瞳で見上げて服従の誓いを述べた
+	PRINTFORM %NAME:TARGET%の名前が刻印されたネームプレートが
+	IF TIME == 0
+		PRINT 夕陽を受けて
+	ELSE
+		PRINT 月の光を受けて
+	ENDIF
+	PRINTW きらりと光っている……
+	PRINTL  
+	;一線越えない消滅
+	IF TALENT:一線越えない
+		PRINTFORMW %NAME:TARGET%は[%TALENTNAME:27%]を失った
+		TALENT:一線越えない = 0
+	ENDIF
+	;貞操観念消滅
+	IF TALENT:貞操観念
+		PRINTFORMW %NAME:TARGET%は[%TALENTNAME:30%]を失った
+		TALENT:貞操観念 = 0
+	ENDIF
+	PRINTFORMW %NAME:MASTER%はしなだれかかっている%NAME:TARGET%の頭を長い間撫でながら
+	PRINTFORMW 空を見上げ、今後の調教に思いを馳せていった……
+	PRINTL  
+	;服従取得
+	IF TALENT:服従 == 0
+		PRINTFORMW %NAME:TARGET%は[%TALENTNAME:180%]を得た
+		TALENT:服従 = 1
+	ENDIF
+	;隷属取得
+	IF TALENT:隷属 == 0
+		PRINTFORMW %NAME:TARGET%は[%TALENTNAME:182%]を得た
+		TALENT:隷属 = 1
+	ENDIF
+	;売却不可フラグ(首輪売却を不可にしたい場合は“;”を外してください)
+;	CFLAG:7 = 1
+	WAIT
+	IF FLAG:1 == 9
+		;FLAG:1が9のときは特殊ハーレムエンドへ。
+		;“IF FLAG:1 == 9”を奴隷エンドと分けることは可能
+		;烙印9＋赤い首輪のハーレムエンドはIF ITEM:赤い首輪で仕分けすればいけるか？
+		CALL SLAVE_ENDING
+	ELSE
+		CALL SINGLE_ENDING
+	ENDIF
+
+;	IF FLAG:5 != 9
+;		PRINTFORMW ―――奴隷エンド条件達成―――
+;		PRINTFORMW …………
+;		PRINTFORMW ………
+;		PRINTFORMW ……
+;		CALL GAME_CONTINUE
+;	ENDIF
+ENDIF
+
+;烙印
+IF BOUGHT == 87
+	ITEM:隷属の証 = 0
+	PRINTFORMW ※注意！　%NAME:TARGET%に烙印を押すと二度と別れられなくなります。
+	PRINTW それでもいいですか？
+	DRAWLINE
+	PRINTFORML [0] - %NAME:TARGET%に烙印を押す
+	PRINTL [100] - やめる
+	DRAWLINE
+	$INPUT_LOOP_RAKUIN
+	INPUT
+	IF RESULT == 100
+		MONEY += 100000
+		RETURN 0
+	ELSEIF RESULT == 0
+		PRINTFORMW %NAME:MASTER%は%NAME:TARGET%に烙印を押した
+		;TFLAG:13 = 14を奴隷エンド口上、TFLAG:13 = 15を烙印が押された時の口上とする
+		TFLAG:13 = 15
+		CALL SELF_KOJO
+		FLAG:1 += 1
+		PRINTFORMW %NAME:TARGET%は%NAME:MASTER%の所有物となったことに
+		PRINTFORMW この上ない悦びを感じているようだ……
+		;一線越えない消滅
+		IF TALENT:一線越えない
+			PRINTFORMW %NAME:TARGET%は[%TALENTNAME:27%]を失った
+			TALENT:一線越えない = 0
+		ENDIF
+		PRINTFORMW %NAME:MASTER%は%NAME:TARGET%の躰に刻まれた烙印を指先で撫で、
+		PRINTFORMW %NAME:TARGET%の従属心を煽りたてた
+		PRINTL  
+		;服従取得
+		IF TALENT:服従 == 0
+			PRINTFORMW %NAME:TARGET%は[%TALENTNAME:180%]を得た
+			TALENT:服従 = 1
+		ENDIF
+		;烙印取得
+		IF TALENT:烙印 == 0
+			PRINTFORMW %NAME:TARGET%は[%TALENTNAME:181%]を得た
+			TALENT:烙印 = 1
+		ENDIF
+		;売却不可フラグ
+		CFLAG:7 = 1
+		PRINTFORMW ―――%NAME:TARGET%は身も心も%NAME:MASTER%の支配下になりました―――
+		PRINTFORMW …………
+		PRINTFORMW ………
+		PRINTFORMW ……
+;		IF FLAG:1 < 9
+;			PRINTFORMW ＜購入できる%ITEMNAME:87%は残り{9-FLAG:1}個です＞
+;		ELSE
+;			PRINTFORMW ＜%ITEMNAME:87%は売り切れました＞
+;		ENDIF
+		PRINTFORMW ＜%NAME:TARGET%と別れられなくなりました＞
+		WAIT
+	ELSE
+		PRINTFORML 正しい値を入力してください
+		GOTO INPUT_LOOP_RAKUIN
+	ENDIF
+	RETURN 1
+ENDIF
+
+;口上表示。各アイテム使用時にTFLAG:600設定（設定されていないアイテムもあり）
+T = TARGET
+TARGET = RESULT
+CALL KOJO_JUN
+TARGET = T
+
+;-------------------------------------------------
+;虹の飴玉(性転換)
+;-------------------------------------------------
+@USE_DRUG_83
+;現状では主人専用の性転換処理
+IF TALENT:MASTER:オトコ
+	;オトコの場合、女性になる
+	PRINTFORML %CALLNAME:MASTER%は突然体全体が光に包まれるような感覚を感じた
+	PRINTW すると、意識がぼんやりとし、まるで光の海を漂うような浮遊感に包まれた……
+	PRINTL 少しして、体を包む光が消失したところで、体を確認すると、
+	PRINTFORML %CALLNAME:MASTER%の体はすっかり女性になっていた……
+	PRINTW  
+	PRINTFORMW ＜%CALLNAME:MASTER%は女性になった＞
+	TALENT:MASTER:オトコ = 0
+
+	;以下の素質があれば消去し記録保存
+	;童貞
+	IF TALENT:MASTER:童貞
+		TALENT:MASTER:童貞 = 0
+		CFLAG:MASTER:41 |= 1p7
+	ENDIF
+	;早漏
+	IF TALENT:MASTER:早漏
+		TALENT:MASTER:早漏 = 0
+		CFLAG:MASTER:41 |= 1p8
+	ENDIF
+
+	;以下の記録があれば素質復元
+	;ふたなり
+	IF CFLAG:MASTER:41 & 1p0
+		TALENT:MASTER:ふたなり = 1
+	ELSE
+		TALENT:MASTER:ふたなり = 0
+	ENDIF
+	;不思議な根
+	IF CFLAG:MASTER:41 & 1p1
+		TALENT:MASTER:不思議な根 = 1
+	ELSE
+		TALENT:MASTER:不思議な根 = 0
+	ENDIF
+	;具現
+	IF CFLAG:MASTER:41 & 1p2
+		TALENT:MASTER:具現 = 1
+	ELSE
+		TALENT:MASTER:具現 = 0
+	ENDIF
+	;貧乳
+	IF CFLAG:MASTER:41 & 1p3
+		TALENT:MASTER:貧乳 = 1
+	ELSE
+		TALENT:MASTER:貧乳 = 0
+	ENDIF
+	;巨乳
+	IF CFLAG:MASTER:41 & 1p4
+		TALENT:MASTER:巨乳 = 1
+	ELSE
+		TALENT:MASTER:巨乳 = 0
+	ENDIF
+	;処女
+	IF CFLAG:MASTER:41 & 1p5
+		TALENT:MASTER:処女 = 1
+	ELSE
+		TALENT:MASTER:処女 = 0
+	ENDIF
+	;母乳体質
+	IF CFLAG:MASTER:41 & 1p6
+		TALENT:MASTER:母乳体質 = 1
+	ELSE
+		TALENT:MASTER:母乳体質 = 0
+	ENDIF
+	;早漏（ふたなりの場合）
+	IF (CFLAG:MASTER:41 & 1p8) && TALENT:MASTER:ふたなり
+		TALENT:MASTER:早漏 = 1
+	ELSE
+		TALENT:MASTER:早漏 = 0
+	ENDIF
+ELSE
+	;女性の場合、オトコになる
+	PRINTFORML %CALLNAME:MASTER%は突然体全体が光に包まれるような感覚を感じた
+	PRINTW すると、意識がぼんやりとし、まるで光の海を漂うような浮遊感に包まれた……
+	PRINTL 少しして、体を包む光が消失したところで、体を確認すると、
+	PRINTFORML %CALLNAME:MASTER%の体はすっかり男性になっていた……
+	PRINTW  
+	PRINTFORMW ＜%CALLNAME:MASTER%は男性になった＞
+	TALENT:MASTER:オトコ = 1
+
+	;以下の記録があれば素質復元
+	;童貞
+	IF CFLAG:MASTER:41 & 1p7
+		TALENT:MASTER:童貞 = 1
+	ELSE
+		TALENT:MASTER:童貞 = 0
+	ENDIF
+	;早漏
+	SIF CFLAG:MASTER:41 & 1p8
+		TALENT:MASTER:早漏 = 1
+
+	;CFLAG:MASTER:41を一旦初期化
+	CFLAG:MASTER:41 = 0
+	
+	;以下の素質があれば消去し記録保存
+	;ふたなり
+	IF TALENT:MASTER:ふたなり
+		TALENT:MASTER:ふたなり = 0
+		CFLAG:MASTER:41 |= 1p0
+	ENDIF
+	;不思議な根
+	IF TALENT:MASTER:不思議な根
+		TALENT:MASTER:不思議な根 = 0
+		CFLAG:MASTER:41 |= 1p1
+	ENDIF
+	;具現
+	IF TALENT:MASTER:具現
+		TALENT:MASTER:具現 = 0
+		CFLAG:MASTER:41 |= 1p2
+	ENDIF
+	;貧乳
+	IF TALENT:MASTER:貧乳
+		TALENT:MASTER:貧乳 = 0
+		CFLAG:MASTER:41 |= 1p3
+	ENDIF
+	;巨乳
+	IF TALENT:MASTER:巨乳
+		TALENT:MASTER:巨乳 = 0
+		CFLAG:MASTER:41 |= 1p4
+	ENDIF
+	;処女
+	IF TALENT:MASTER:処女
+		TALENT:MASTER:処女 = 0
+		CFLAG:MASTER:41 |= 1p5
+	ENDIF
+	;母乳体質
+	IF TALENT:MASTER:母乳体質
+		TALENT:MASTER:母乳体質 = 0
+		CFLAG:MASTER:41 |= 1p6
+	ENDIF
+ENDIF
+

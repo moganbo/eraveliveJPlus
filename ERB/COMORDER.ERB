@@ -1,0 +1,738 @@
+﻿;-------------------------------------------------
+;コマンドを実行できるか判定の処理
+;-------------------------------------------------
+@COM_ORDER_COMMON
+;各コマンドの固有実行判定
+TRYCALLFORM COM_ORDER_{SELECTCOM}
+
+;実行できない場合
+IF A < V
+	;実行判定失敗口上呼び出し
+	TFLAG:13 = 99
+	CALL SELF_KOJO
+	;実行判定非表示にしている場合下記の文章が表示されないと実行できない場合が分かり難いため文章表示
+	IF ((FLAG:23 & 1p27) == 0) && FLAG:2 != 1
+		;実行判定を表示する場合は文章表示の必要なし
+	ELSE
+		PRINTFORMW %CALLNAME:TARGET%の合意を得られませんでした
+	ENDIF
+	RETURN 0
+ENDIF
+;実行できる場合はRETURN 1で終了
+RETURN 1
+
+;-------------------------------------------------
+;すべての命令に共通の要素を考慮
+;(従順が高いと命令に従いやすいなど)
+;-------------------------------------------------
+@COM_ORDER
+;ターゲット主体コマンド判定
+B = 0
+;正常位させる、後背位させる、吸血させる
+SIF SELECTCOM == 193 ||SELECTCOM == 194 || SELECTCOM == 151
+	B = 1
+
+;ABL:従順
+IF ABL:親密
+	A += ABL:親密 * 3
+ENDIF
+
+;ターゲット主体コマンド
+IF B
+	;ABL:サドっ気
+	IF ABL:サドっ気
+		A += ABL:サドっ気*2
+	ENDIF
+ELSE
+	;ABL:マゾっ気
+	IF ABL:マゾっ気
+		A += ABL:マゾっ気*2
+	ENDIF
+ENDIF
+
+;レズ調教
+IF TALENT:PLAYER:オトコ == 0 && TALENT:TARGET:オトコ == 0
+	;ウフフかどうか
+	IF TFLAG:44
+		IF TALENT:恋人 == 0
+			A -= 5
+		ENDIF
+	ELSE
+		A += 5
+	ENDIF
+	;ABL:レズっ気
+	IF ABL:レズっ気
+		A += ABL:レズっ気*3
+	ENDIF
+	;ABL:レズ中毒
+	IF ABL:レズ中毒
+		A += ABL:レズ中毒*3
+	ENDIF
+	;TALENT:両刀
+	IF TALENT:両刀
+		A += 10
+	ENDIF
+	;好奇心
+	IF TALENT:好奇心
+		A += 7
+	ENDIF
+	;保守的
+	IF TALENT:保守的 && TFLAG:44
+		A -= 13
+	ENDIF
+ELSE
+	;好奇心
+	IF TALENT:好奇心
+		A += 5
+	ENDIF
+	;保守的
+	IF TALENT:保守的
+		T = 5
+		SIF TFLAG:44
+			T = 10
+		A -= T
+	ENDIF
+ENDIF
+
+;刻印チェック
+IF MARK:苦痛依存
+	A += MARK:苦痛依存 * 5
+ENDIF
+
+IF TALENT:プライド高い
+	T = 4
+ELSEIF TALENT:プライド低い
+	T = 1
+ELSE
+	T = 2
+ENDIF
+
+IF MARK:既成事実
+	A += MARK:既成事実 * 3 * T
+ENDIF
+IF MARK:反発感情
+	A -= MARK:反発感情 * 2 * T
+ENDIF
+
+;PALAM:恭順
+IF PALAM:恭順 < PALAMLV:1
+	L = 0
+ELSEIF PALAM:恭順 < PALAMLV:2
+	L = 1
+ELSEIF PALAM:恭順 < PALAMLV:3
+	L = 2
+ELSEIF PALAM:恭順 < PALAMLV:4
+	L = 3
+ELSEIF PALAM:恭順 < PALAMLV:5
+	L = 4
+ELSE
+	L = 5
+ENDIF
+IF L
+	A += L * 3
+ENDIF
+
+;PALAM:恐怖
+IF PALAM:恐怖 < PALAMLV:1
+	L = 0
+ELSEIF PALAM:恐怖 < PALAMLV:2
+	L = 1
+ELSEIF PALAM:恐怖 < PALAMLV:3
+	L = 2
+ELSEIF PALAM:恐怖 < PALAMLV:4
+	L = 3
+ELSEIF PALAM:恐怖 < PALAMLV:5
+	L = 4
+ELSE
+	L = 5
+ENDIF
+IF L
+	A += L * 3
+ENDIF
+
+;反抗的
+IF TALENT:反抗的
+	A -= 5
+ENDIF
+;気丈
+IF TALENT:気丈
+	A -= 5
+ENDIF
+;素直
+IF TALENT:素直
+	A += 5
+ENDIF
+;自尊心
+IF TALENT:プライド高い
+	A -= 15
+ENDIF
+;プライド低い
+IF TALENT:プライド低い
+	A += 5
+ENDIF
+;目立ちたがり
+IF TALENT:目立ちたがり
+	A += 2
+ENDIF
+;抑圧
+IF TALENT:抑圧
+	A -= 10
+ENDIF
+;抵抗
+IF TALENT:抵抗
+	A -= 10
+ENDIF
+;弱味
+IF TALENT:弱味
+	A += 12
+ENDIF
+;即落ち
+IF TALENT:即落ち
+	A += 10
+ENDIF
+
+;淫乱化
+IF TALENT:淫乱 && TFLAG:44
+	A += 5
+ENDIF
+
+;妄信
+IF TALENT:妄信
+	A += 8
+ENDIF
+
+;服従
+IF TALENT:服従
+	A += 10
+ENDIF
+
+;烙印
+IF TALENT:烙印
+	A += 5
+ENDIF
+
+;隷属
+IF TALENT:隷属
+	A += 5
+ENDIF
+
+;恋人
+IF TALENT:恋人 && ASSIPLAY == 0
+	A += 15
+ENDIF
+;親愛
+IF TALENT:親愛 && ASSIPLAY == 0
+	A += 30
+ENDIF
+
+;調教者の素質
+;魅惑
+IF TALENT:PLAYER:魅惑
+	A += 6
+ENDIF
+;謎の魅力
+IF TALENT:PLAYER:謎の魅力
+	A += 6
+ENDIF
+
+;ターゲット主体コマンド
+IF B
+	;サド
+	IF TALENT:サド
+		A += 3
+	ENDIF
+	;マゾっ気
+	IF ABL:PLAYER:マゾっ気 >= 3
+		A += ABL:PLAYER:マゾっ気 / 3
+	ENDIF
+ELSE
+	;サド
+	IF TALENT:PLAYER:サド
+		A += 3
+	ENDIF
+	;サドっ気
+	IF ABL:PLAYER:サドっ気 >= 3
+		A += ABL:PLAYER:サドっ気 / 3
+	ENDIF
+ENDIF
+;狂気の目発動中
+IF TFLAG:72 == 1
+	A -= 15
+ENDIF
+
+;酔ってる
+IF TFLAG:47 >= 5
+	A += TFLAG:47 / 5
+ENDIF
+
+;助手の素質
+;鼓舞
+IF TALENT:PLAYER:鼓舞
+	A += 1
+ENDIF
+
+
+;相性チェック
+R = NO:PLAYER
+IF RELATION:R > 0 && RELATION:R < 30
+	A -= 10
+ELSEIF RELATION:R > 0 && RELATION:R < 70
+	A -= 6
+ELSEIF RELATION:R > 0 && RELATION:R < 100
+	A -= 3
+ELSEIF RELATION:R >= 100 && RELATION:R < 130
+	A += 3
+ELSEIF RELATION:R >= 100 && RELATION:R < 170
+	A += 6
+ELSEIF RELATION:R >= 100 && RELATION:R >= 170
+	A += 10
+ENDIF
+
+IF ((FLAG:23 & 1p27) == 0) && FLAG:2 != 1
+	;ABL:従順
+	IF ABL:親密
+		PRINTS ABLNAME:0
+		PRINTV 'LV,ABL:親密,'(,ABL:親密 * 3,')
+		S = 1
+	ENDIF
+
+	;ターゲット主体コマンド
+	IF B
+		;ABL:サドっ気
+		IF ABL:サドっ気
+			SIF S
+				PRINT  + 
+			PRINTS ABLNAME:15
+			PRINTV 'LV,ABL:サドっ気,'(,ABL:サドっ気*2,')
+			S = 1
+		ENDIF
+	ELSE
+		;ABL:マゾっ気
+		IF ABL:マゾっ気
+			SIF S
+				PRINT  + 
+			PRINTS ABLNAME:8
+			PRINTV 'LV,ABL:マゾっ気,'(,ABL:マゾっ気*2,')
+			S = 1
+		ENDIF
+	ENDIF
+
+	;レズ調教
+	IF TALENT:PLAYER:オトコ == 0 && TALENT:TARGET:オトコ == 0
+		;ウフフかどうか
+		IF TFLAG:44
+			IF TALENT:恋人 == 0
+				PRINT  - 
+				PRINTFORM %TALENTNAME:153%じゃない
+				PRINTV '(,5,')
+				S = 1
+			ENDIF
+		ELSE
+			SIF S
+				PRINT  + 
+			PRINT 友達の範囲
+			PRINTV '(,5,')
+			S = 1
+		ENDIF
+		;ABL:レズっ気
+		IF ABL:レズっ気
+			SIF S
+				PRINT  + 
+			PRINTS ABLNAME:9
+			PRINTV 'LV,ABL:レズっ気,'(,ABL:レズっ気*3,')
+			S = 1
+		ENDIF
+		;ABL:レズ中毒
+		IF ABL:レズ中毒
+			SIF S
+				PRINT  + 
+			PRINTS ABLNAME:12
+			PRINTV 'LV,ABL:レズ中毒,'(,ABL:レズ中毒*3,')
+			S = 1
+		ENDIF
+		;TALENT:両刀
+		IF TALENT:両刀
+			SIF S
+				PRINT  + 
+			PRINTS TALENTNAME:81
+			PRINTV '(,10,')
+			S = 1
+		ENDIF
+		;好奇心
+		IF TALENT:好奇心
+			SIF S
+				PRINT  + 
+			PRINTS TALENTNAME:23
+			PRINTV '(,7,')
+			S = 1
+		ENDIF
+		;保守的
+		IF TALENT:保守的 && TFLAG:44
+			PRINT  - 
+			PRINTS TALENTNAME:24
+			PRINTV '(,13,')
+			S = 1
+		ENDIF
+	ELSE
+		;好奇心
+		IF TALENT:好奇心
+			SIF S
+				PRINT  + 
+			PRINTS TALENTNAME:23
+			PRINTV '(,5,')
+			S = 1
+		ENDIF
+		;保守的
+		IF TALENT:保守的
+			T = 5
+			SIF TFLAG:44
+				T = 10
+			PRINT  - 
+			PRINTS TALENTNAME:24
+			PRINTV '(,T,')
+			S = 1
+		ENDIF
+	ENDIF
+
+	;刻印チェック
+	IF MARK:苦痛依存
+		SIF S
+			PRINT  + 
+		PRINTS MARKNAME:0
+		PRINTV 'LV,MARK:苦痛依存,'(,MARK:苦痛依存 * 5,')
+		S = 1
+	ENDIF
+
+	IF TALENT:プライド高い
+		T = 4
+	ELSEIF TALENT:プライド低い
+		T = 1
+	ELSE
+		T = 2
+	ENDIF
+
+	IF MARK:既成事実
+		SIF S
+			PRINT  + 
+		PRINTS MARKNAME:2
+		PRINTV 'LV,MARK:既成事実,'(,MARK:既成事実 * 3 * T,')
+		S = 1
+	ENDIF
+	IF MARK:反発感情
+		PRINT  - 
+		PRINTS MARKNAME:3
+		PRINTV 'LV,MARK:反発感情,'(,MARK:反発感情 * 2 * T,')
+		S = 1
+	ENDIF
+
+	;PALAM:恭順
+	IF PALAM:恭順 < PALAMLV:1
+		L = 0
+	ELSEIF PALAM:恭順 < PALAMLV:2
+		L = 1
+	ELSEIF PALAM:恭順 < PALAMLV:3
+		L = 2
+	ELSEIF PALAM:恭順 < PALAMLV:4
+		L = 3
+	ELSEIF PALAM:恭順 < PALAMLV:5
+		L = 4
+	ELSE
+		L = 5
+	ENDIF
+	IF L
+		SIF S
+			PRINT  + 
+		PRINTS PALAMNAME:4
+		PRINTV 'LV,L,'(,L * 3,')
+		S = 1
+	ENDIF
+
+	;PALAM:恐怖
+	IF PALAM:恐怖 < PALAMLV:1
+		L = 0
+	ELSEIF PALAM:恐怖 < PALAMLV:2
+		L = 1
+	ELSEIF PALAM:恐怖 < PALAMLV:3
+		L = 2
+	ELSEIF PALAM:恐怖 < PALAMLV:4
+		L = 3
+	ELSEIF PALAM:恐怖 < PALAMLV:5
+		L = 4
+	ELSE
+		L = 5
+	ENDIF
+	IF L
+		SIF S
+			PRINT  + 
+		PRINTS PALAMNAME:10
+		PRINTV 'LV,L,'(,L * 3,')
+		S = 1
+	ENDIF
+
+	;反抗的
+	IF TALENT:反抗的
+		PRINT  - 
+		PRINTS TALENTNAME:11
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+	;気丈
+	IF TALENT:気丈
+		PRINT  - 
+		PRINTS TALENTNAME:12
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+	;素直
+	IF TALENT:素直
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:13
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+	;自尊心
+	IF TALENT:プライド高い
+		PRINT  - 
+		PRINTS TALENTNAME:15
+		PRINTV '(,15,')
+		S = 1
+	ENDIF
+	;プライド低い
+	IF TALENT:プライド低い
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:17
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+	;目立ちたがり
+	IF TALENT:目立ちたがり
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:28
+		PRINTV '(,2,')
+		S = 1
+	ENDIF
+	;抑圧
+	IF TALENT:抑圧
+		PRINT  - 
+		PRINTS TALENTNAME:32
+		PRINTV '(,10,')
+		S = 1
+	ENDIF
+	;抵抗
+	IF TALENT:抵抗
+		PRINT  - 
+		PRINTS TALENTNAME:34
+		PRINTV '(,10,')
+		S = 1
+	ENDIF
+	;弱味
+	IF TALENT:弱味
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:37
+		PRINTV '(,12,')
+		S = 1
+	ENDIF
+	;即落ち
+	IF TALENT:即落ち
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:73
+		PRINTV '(,10,')
+		S = 1
+	ENDIF
+
+	;淫乱化
+	IF TALENT:淫乱 && TFLAG:44
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:76
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+
+	;妄信
+	IF TALENT:妄信
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:86
+		PRINTV '(,8,')
+		S = 1
+	ENDIF
+
+	;服従
+	IF TALENT:服従
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:180
+		PRINTV '(,10,')
+		S = 1
+	ENDIF
+
+	;烙印
+	IF TALENT:烙印
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:181
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+
+	;隷属
+	IF TALENT:隷属
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:182
+		PRINTV '(,5,')
+		S = 1
+	ENDIF
+
+	;恋人
+	IF TALENT:恋人 && ASSIPLAY == 0
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:153
+		PRINTV '(,15,')
+		S = 1
+	ENDIF
+	;親愛
+	IF TALENT:親愛 && ASSIPLAY == 0
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:88
+		PRINTV '(,30,')
+		S = 1
+	ENDIF
+
+	;調教者の素質
+	;魅惑
+	IF TALENT:PLAYER:魅惑
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:91
+		PRINTV '(,6,')
+		S = 1
+	ENDIF
+	;謎の魅力
+	IF TALENT:PLAYER:謎の魅力
+		SIF S
+			PRINT  + 
+		PRINTS TALENTNAME:92
+		PRINTV '(,6,')
+		S = 1
+	ENDIF
+
+	;ターゲット主体コマンド
+	IF B
+		;サド
+		IF TALENT:サド
+			SIF S
+				PRINT  + 
+			PRINTS TALENTNAME:83
+			PRINTV '(,3,')
+			S = 1
+		ENDIF
+		;マゾっ気
+		IF ABL:PLAYER:マゾっ気 >= 3
+			SIF S
+				PRINT  + 
+			PRINTS ABLNAME:8
+			PRINTV 'LV,ABL:PLAYER:マゾっ気,'(,ABL:PLAYER:マゾっ気 / 3,')
+			S = 1
+		ENDIF
+	ELSE
+		;サド
+		IF TALENT:PLAYER:サド
+			SIF S
+				PRINT  + 
+			PRINTS TALENTNAME:83
+			PRINTV '(,3,')
+			S = 1
+		ENDIF
+		;サドっ気
+		IF ABL:PLAYER:サドっ気 >= 3
+			SIF S
+				PRINT  + 
+			PRINTS ABLNAME:15
+			PRINTV 'LV,ABL:PLAYER:サドっ気,'(,ABL:PLAYER:サドっ気 / 3,')
+			S = 1
+		ENDIF
+	ENDIF
+	;狂気の目発動中
+	IF TFLAG:72 == 1
+		SIF S
+			PRINT  - 
+		PRINT 狂気の目発動中
+		PRINTV '(,15,')
+		S = 1
+	ENDIF
+
+	;酔ってる
+	IF TFLAG:47 >= 5
+		SIF S
+			PRINT  + 
+		IF TFLAG:47 >= 60
+			PRINT 泥酔
+		ELSEIF TFLAG:47 >= 30
+			PRINT 酩酊
+		ELSEIF TFLAG:47 >= 5
+			PRINT ほろ酔い
+		ENDIF
+		PRINTV '(,TFLAG:47 / 5,')
+		S = 1
+	ENDIF
+
+	;助手の素質
+	;鼓舞
+	IF TALENT:PLAYER:鼓舞
+		SIF S
+			PRINT  + 
+		SIF ASSIPLAY
+			PRINT 助手が
+		PRINTS TALENTNAME:118
+		PRINTV '(,1,')
+		S = 1
+	ENDIF
+
+
+	;相性チェック
+	R = NO:PLAYER
+	IF RELATION:R > 0 && RELATION:R < 30
+		PRINT  - 
+		PRINT 相性最悪
+		PRINTV '(,10,')
+		S = 1
+	ELSEIF RELATION:R > 0 && RELATION:R < 70
+		PRINT  - 
+		PRINT 相性悪い
+		PRINTV '(,10,')
+		S = 1
+	ELSEIF RELATION:R > 0 && RELATION:R < 100
+		PRINT  - 
+		PRINT 相性いまいち
+		PRINTV '(,3,')
+		S = 1
+	ELSEIF RELATION:R >= 100 && RELATION:R < 130
+		SIF S
+			PRINT  + 
+		PRINT 相性ややよい
+		PRINTV '(,3,')
+		S = 1
+	ELSEIF RELATION:R >= 100 && RELATION:R < 170
+		SIF S
+			PRINT  + 
+		PRINT 相性よい
+		PRINTV '(,6,')
+		S = 1
+	ELSEIF RELATION:R >= 100 && RELATION:R >= 170
+		SIF S
+			PRINT  + 
+		PRINT 相性最高
+		PRINTV '(,10,')
+		S = 1
+	ENDIF
+ENDIF
+

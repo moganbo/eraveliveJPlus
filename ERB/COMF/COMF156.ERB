@@ -1,0 +1,259 @@
+﻿@COM_ABLE156
+;荊実行判定
+RETURN 0
+
+;COM_ABLE共通判定
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;ウフフ中じゃないと無理
+SIF TFLAG:44 == 0
+	RETURN 0
+;調教者が幽香でないとダメ
+SIF 1
+	RETURN 0
+;触手調教中はダメ
+SIF TEQUIP:90
+	RETURN 0
+;縄で緊縛中はダメ
+SIF TEQUIP:44 && TEQUIP:72 == 0
+	RETURN 0
+;お風呂場プレイ中はダメ
+SIF TEQUIP:58
+	RETURN 0
+;新妻プレイ中はダメ
+SIF TEQUIP:59
+	RETURN 0
+;解除はいつでも可能
+SIF TEQUIP:72
+	RETURN 1
+;調教者の技巧が3無いとできない
+SIF ABL:PLAYER:技巧 <= 2
+	RETURN 0
+RETURN 1
+
+@COM156
+;荊
+
+PRINTL 荊
+STR:0 = 荊
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+
+;緊縛経験が高いと消費減少
+IF EXP:緊縛経験 < EXPLV:3
+	LOSEBASE:体力 += 100
+	LOSEBASE:気力 += 150
+ELSEIF EXP:緊縛経験 < EXPLV:4
+	LOSEBASE:体力 += 80
+	LOSEBASE:気力 += 120
+ELSE
+	LOSEBASE:体力 += 60
+	LOSEBASE:気力 += 90
+ENDIF
+
+A = 250
+B = 0
+SOURCE:露出 = 800
+SOURCE:屈従 = 500
+SOURCE:逸脱 = 500
+
+;PALAM:苦痛をみる
+IF PALAM:苦痛 < PALAMLV:1
+	B = 1500
+ELSEIF PALAM:苦痛 < PALAMLV:2
+	B = 2000
+ELSEIF PALAM:苦痛 < PALAMLV:3
+	B = 2500
+ELSEIF PALAM:苦痛 < PALAMLV:4
+	B = 3000
+ELSEIF PALAM:苦痛 >= PALAMLV:4
+	B = 4000
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES A , 0.40
+ELSEIF ABL:親密 == 1
+	TIMES A , 0.60
+ELSEIF ABL:親密 == 2
+	TIMES A , 0.80
+ELSEIF ABL:親密 == 3
+	TIMES A , 1.00
+ELSEIF ABL:親密 == 4
+	TIMES A , 1.10
+ELSE
+	TIMES A , 1.20
+ENDIF
+
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	TIMES A , 0.80
+	TIMES B , 0.80
+ELSEIF ABL:マゾっ気 == 1
+	TIMES A , 1.00
+	TIMES B , 1.00
+ELSEIF ABL:マゾっ気 == 2
+	TIMES A , 1.30
+	TIMES B , 1.30
+ELSEIF ABL:マゾっ気 == 3
+	TIMES A , 1.60
+	TIMES B , 1.60
+ELSEIF ABL:マゾっ気 == 4
+	TIMES A , 2.00
+	TIMES B , 2.00
+ELSE
+	TIMES A , 3.00
+	TIMES B , 3.00
+ENDIF
+
+;倒錯的
+SIF TALENT:倒錯的
+	TIMES A , 2.00
+
+;アイマスク装着または暗闇展開時は効果上昇
+SIF TEQUIP:43 || TEQUIP:80
+	TIMES A , 2.00
+;ボールギャグ装着時は効果上昇
+SIF TEQUIP:45
+	TIMES A , 2.00
+
+SOURCE:痛み += A + B
+SOURCE:露出 += A
+SOURCE:屈従 += A
+SOURCE:逸脱 += A
+
+EXP:緊縛経験 += 4
+PRINTL 緊縛経験＋４
+
+CALL TRAIN_MESSAGE_B
+
+;地の文カット時の縄の着脱
+IF TEQUIP:72
+	TEQUIP:44 = 0
+	TEQUIP:72 = 0
+ELSE
+	TEQUIP:44 = 1
+	TEQUIP:72 = 1
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM156
+;縄の着脱
+IF TEQUIP:72
+	TEQUIP:44 = 0
+	TEQUIP:72 = 0
+	PRINTFORML %CALLNAME:TARGET%を拘束していた荊は一瞬にして枯れ果て、崩れ落ちていった
+	PRINTL 　
+ELSE
+	TEQUIP:44 = 1
+	TEQUIP:72 = 1
+	PRINT 突如床から出現した幾本もの荊が
+	SIF TALENT:小柄体型
+		PRINT 華奢な
+	PRINTFORML %CALLNAME:TARGET%の体を容赦なく絡め取った
+	PRINTL 　
+	PRINTFORML %CALLNAME:TARGET%の白く美しい肌に食い込んでいる棘の先端からは赤い血が流れ出ており、
+	PRINTL 荊の色とも相まって怪しげなコントラストを形作っている…
+ENDIF
+
+@EQUIP_COM72
+;荊で緊縛中
+
+PRINTL ＜荊で緊縛中＞
+
+
+;緊縛経験が高いと消費減少
+IF EXP:緊縛経験 < EXPLV:3
+	LOSEBASE:体力 += 50
+	LOSEBASE:気力 += 100
+ELSEIF EXP:緊縛経験 < EXPLV:4
+	LOSEBASE:体力 += 40
+	LOSEBASE:気力 += 80
+ELSE
+	LOSEBASE:体力 += 30
+	LOSEBASE:気力 += 60
+ENDIF
+
+;PALAM:苦痛をみる
+IF PALAM:苦痛 < PALAMLV:1
+	SOURCE:痛み = 60
+ELSEIF PALAM:苦痛 < PALAMLV:2
+	SOURCE:痛み = 120
+ELSEIF PALAM:苦痛 < PALAMLV:3
+	SOURCE:痛み = 180
+ELSEIF PALAM:苦痛 < PALAMLV:4
+	SOURCE:痛み = 240
+ELSEIF PALAM:苦痛 >= PALAMLV:4
+	SOURCE:痛み = 300
+ENDIF
+
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	A = 60
+ELSEIF ABL:マゾっ気 == 1
+	A = 180
+ELSEIF ABL:マゾっ気 == 2
+	A = 300
+ELSEIF ABL:マゾっ気 == 3
+	A = 480
+ELSEIF ABL:マゾっ気 == 4
+	A = 700
+ELSE
+	A = 850
+ENDIF
+
+;倒錯的
+SIF TALENT:倒錯的
+	TIMES A , 2.00
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+
+SOURCE:痛み += A
+SOURCE:露出 += A
+SOURCE:屈従 += A
+SOURCE:逸脱 += A
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+ENDIF
+
+SIF ASSIPLAY == 0 && ABL:マゾっ気 >= 2
+	TFLAG:30 += 1
+
+
+EXP:緊縛経験 += 3
+PRINTL 緊縛経験＋３

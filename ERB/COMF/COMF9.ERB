@@ -1,0 +1,50 @@
+﻿@COM9
+
+PRINTL アナル舐め
+STR:0 = アナル舐め
+CALL TRAIN_MESSAGE_B
+
+;アナル舐め
+LOSEBASE:体力 += 5
+LOSEBASE:気力 += 50
+
+SOURCE:液体追加 = 50
+SOURCE:露出 = 300
+SOURCE:逸脱 = 500
+
+;ABL:Ａ感覚をみる
+IF ABL:Ａ感覚 == 0
+	SOURCE:快Ａ = 5
+ELSEIF ABL:Ａ感覚 == 1
+	SOURCE:快Ａ = 50
+ELSEIF ABL:Ａ感覚 == 2
+	SOURCE:快Ａ = 200
+ELSEIF ABL:Ａ感覚 == 3
+	SOURCE:快Ａ = 500
+ELSEIF ABL:Ａ感覚 == 4
+	SOURCE:快Ａ = 1000
+ELSE
+	SOURCE:快Ａ = (ABL:Ａ感覚 * 400) - 200
+ENDIF
+
+;調教者のTALENT:舌使いをみる
+IF TALENT:PLAYER:舌使い
+	TIMES SOURCE:快Ａ , 2.00
+	SOURCE:恭順追加 += SOURCE:快Ｃ/20
+ENDIF
+
+EXP:Ａ経験 += 1
+PRINTL Ａ経験＋１
+
+;奴隷のＡ⇔調教者の口の汚れが移動
+STAIN:アナル |= STAIN:PLAYER:口
+STAIN:PLAYER:口 |= STAIN:アナル
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +3
+	EXP:レズ経験 += 3
+	EXP:PLAYER:レズ経験 += 3
+ENDIF
+
+RETURN 1

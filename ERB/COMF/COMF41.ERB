@@ -1,0 +1,133 @@
+﻿@COM41
+;鞭
+;実際には苦痛があるためもっと体力気力をもっていかれる
+
+PRINTL 鞭
+STR:0 = 鞭
+CALL TRAIN_MESSAGE_B
+
+
+;主導権をチェック
+IF TFLAG:45 == 0
+	;主導権が主人公側
+	LOSEBASE:体力 += 100
+	LOSEBASE:気力 += 80
+	
+	SOURCE:逸脱 = 1000
+	
+	;PALAM:苦痛をみる
+	IF PALAM:苦痛 < PALAMLV:1
+		SOURCE:痛み = 1000
+	ELSEIF PALAM:苦痛 < PALAMLV:2
+		SOURCE:痛み = 1500
+	ELSEIF PALAM:苦痛 < PALAMLV:3
+		SOURCE:痛み = 2200
+	ELSEIF PALAM:苦痛 < PALAMLV:4
+		SOURCE:痛み = 3000
+	ELSEIF PALAM:苦痛 >= PALAMLV:4
+		SOURCE:痛み = 4000
+	ENDIF
+	
+	;ABL:サドっ気をみる
+	IF ABL:PLAYER:サドっ気 == 0
+		TIMES SOURCE:痛み , 1.00
+	ELSEIF ABL:PLAYER:サドっ気 == 1
+		TIMES SOURCE:痛み , 1.05
+	ELSEIF ABL:PLAYER:サドっ気 == 2
+		TIMES SOURCE:痛み , 1.10
+	ELSEIF ABL:PLAYER:サドっ気 == 3
+		TIMES SOURCE:痛み , 1.20
+	ELSEIF ABL:PLAYER:サドっ気 == 4
+		TIMES SOURCE:痛み , 1.30
+	ELSE
+		SOURCE:痛み = SOURCE:痛み * (ABL:PLAYER:サドっ気 * 5 + 125) / 100
+	ENDIF
+	
+	IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+		PRINTS EXPNAME:40
+		PRINTL +2
+		EXP:レズ経験 += 2
+		EXP:PLAYER:レズ経験 += 2
+	ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+		PRINTS EXPNAME:41
+		PRINTL +2
+		EXP:ＢＬ経験 += 2
+		EXP:PLAYER:ＢＬ経験 += 2
+	ENDIF
+	
+	SIF ASSIPLAY == 0 && ABL:マゾっ気 >= 2
+		TFLAG:30 += 1
+
+ELSE
+	;主導権が相手側
+	LOSEBASE:体力 += 20
+	LOSEBASE:気力 += 120
+	
+	SOURCE:逸脱 = 1000
+	
+	;ABL:サドっ気をみる
+	IF ABL:サドっ気 == 0
+		SOURCE:征服 = 700
+		SOURCE:懐疑 = 3500
+	ELSEIF ABL:サドっ気 == 1
+		SOURCE:征服 = 1200
+		SOURCE:懐疑 = 2700
+	ELSEIF ABL:サドっ気 == 2
+		SOURCE:征服 = 1800
+		SOURCE:懐疑 = 2000
+	ELSEIF ABL:サドっ気 == 3
+		SOURCE:征服 = 2500
+		SOURCE:懐疑 = 1200
+	ELSEIF ABL:サドっ気 == 4
+		SOURCE:征服 = 3200
+		SOURCE:懐疑 = 800
+	ELSE
+		SOURCE:征服 = 2000 + (ABL:サドっ気 * 400)
+		SOURCE:懐疑 = 650 - (ABL:サドっ気 * 30)
+		SIF SOURCE:懐疑 < 0
+			SOURCE:懐疑 = 0
+	ENDIF
+
+	;反発感情が高いほど熱が入る
+	IF MARK:反発感情 == 1
+		SOURCE:征服 += 500
+	ELSEIF MARK:反発感情 == 2
+		SOURCE:征服 += 1200
+	ELSEIF MARK:反発感情 >= 3
+		SOURCE:征服 += 2500
+	ENDIF
+	
+	;サド持ちは懐疑1/4
+	SIF TALENT:サド
+		TIMES SOURCE:懐疑 , 0.25
+
+	;小悪魔持ちは懐疑1/2
+	SIF TALENT:小悪魔
+		TIMES SOURCE:懐疑 , 0.50
+	
+	IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+		PRINTS EXPNAME:40
+		PRINTL +2
+		EXP:レズ経験 += 2
+		EXP:PLAYER:レズ経験 += 2
+	ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+		PRINTS EXPNAME:41
+		PRINTL +2
+		EXP:ＢＬ経験 += 2
+		EXP:PLAYER:ＢＬ経験 += 2
+	ENDIF
+	
+	SIF ASSIPLAY == 0 && ABL:サドっ気 >= 1
+		TFLAG:30 += 1
+	
+	;[サド]取得用カウント
+	SIF ASSIPLAY == 0
+		TFLAG:61 += 1
+ENDIF
+
+
+EXP:異常経験 += 1
+PRINTFORML %EXPNAME:50%＋１
+
+RETURN 1
+

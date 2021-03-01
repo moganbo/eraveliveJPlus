@@ -1,0 +1,222 @@
+﻿@COM16
+;搾乳器
+IF TEQUIP:90
+	PRINTL 触手搾乳
+	STR:0 = 触手搾乳
+ELSE
+	;実行者が[淫具知識]を持っているなら効果増
+	SIF TALENT:PLAYER:淫具知識
+		PRINT 高性能
+	PRINTL 搾乳器
+	STR:0 = 搾乳器
+ENDIF
+
+LOSEBASE:体力 += 50
+LOSEBASE:気力 += 100
+
+SOURCE:性行動 = 100
+SOURCE:達成感 = 100
+SOURCE:痛み = 100
+SOURCE:中毒充足 = 100
+SOURCE:露出 = 100
+SOURCE:屈従 = 100
+SOURCE:恭順追加 = 100
+
+
+;ABL:Ｂ感覚をみる
+IF ABL:Ｂ感覚 == 0
+	A = 200
+ELSEIF ABL:Ｂ感覚 == 1
+	A = 400
+ELSEIF ABL:Ｂ感覚== 2
+	A = 900
+ELSEIF ABL:Ｂ感覚 == 3
+	A = 1600
+ELSEIF ABL:Ｂ感覚 == 4
+	A = 2400
+ELSE
+	A = 1500 + (ABL:Ｂ感覚 * 300)
+ENDIF
+
+IF TALENT:巨乳
+	TIMES A , 1.50
+ENDIF
+IF TALENT:Ｂ敏感
+	TIMES A , 1.50
+ELSEIF TALENT:Ｂ鈍感
+	TIMES A , 0.60
+ENDIF
+
+;貧乳
+SIF TALENT:貧乳
+	TIMES SOURCE:痛み , 1.50
+
+SOURCE:快Ｂ += A
+
+;実行者が[淫具知識]を持っているなら効果増
+SIF TALENT:PLAYER:淫具知識
+	TIMES SOURCE:快Ｂ , 1.20
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+ENDIF
+
+CALL TRAIN_MESSAGE_B
+
+;搾乳器の着脱
+IF TEQUIP:90
+	IF TEQUIP:16
+		TEQUIP:16 = 0
+	ELSE
+		TEQUIP:16 = 1
+		STAIN:胸 |= 2
+		STAIN:胸 |= 4
+	ENDIF
+	T = 0
+ELSE
+	IF TEQUIP:16
+		TEQUIP:16 = 0
+	ELSE
+		TEQUIP:16 = 1
+	ENDIF
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM16
+;搾乳器の着脱
+IF TEQUIP:90
+	IF TEQUIP:16
+		PRINTFORML 触手は%CALLNAME:TARGET%の乳首を解放した
+	ELSE
+		PRINTFORML 吸盤状の触手が%CALLNAME:TARGET%の乳首を吸いあげはじめた
+	ENDIF
+ELSE
+	IF TEQUIP:16
+		PRINTFORML %CALLNAME:TARGET%から搾乳器を取り外した
+	ELSE
+		PRINTFORML %CALLNAME:TARGET%に搾乳器を取り付けた
+	ENDIF
+ENDIF
+
+@EQUIP_COM16
+;搾乳器装備中
+IF TEQUIP:90
+	PRINTL ＜触手搾乳中＞
+ELSE
+	PRINTL ＜搾乳器装備中＞
+ENDIF
+
+LOSEBASE:体力 += 15
+LOSEBASE:気力 += 15
+
+;ABL:B感覚をみる
+IF ABL:Ｂ感覚 == 0
+	A = 40
+ELSEIF ABL:Ｂ感覚 == 1
+	A = 120
+ELSEIF ABL:Ｂ感覚 == 2
+	A = 250
+ELSEIF ABL:Ｂ感覚 == 3
+	A = 450
+ELSEIF ABL:Ｂ感覚 == 4
+	A = 600
+ELSE
+	A = 375 + (ABL:Ｂ感覚 * 75)
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES A , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES A , 0.90
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES A , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES A , 1.10
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES A , 1.20
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES A , 0.80
+ELSEIF ABL:親密 == 1
+	TIMES A , 0.90
+ELSEIF ABL:親密 == 2
+	TIMES A , 1.00
+ELSEIF ABL:親密 == 3
+	TIMES A , 1.10
+ELSEIF ABL:親密 == 4
+	TIMES A , 1.20
+ELSE
+	A = A * (ABL:親密 * 5 + 105) / 100
+ENDIF
+
+;EXP:墳乳経験をみる
+IF EXP:噴乳経験 <= EXPLV:0
+	TIMES A , 1.00
+ELSEIF EXP:噴乳経験 <= EXPLV:1
+	TIMES A , 1.20
+ELSEIF EXP:噴乳経験 <= EXPLV:2
+	TIMES A , 1.40
+ELSEIF EXP:噴乳経験 <= EXPLV:3
+	TIMES A , 1.80
+ELSEIF EXP:噴乳経験 <= EXPLV:4
+	TIMES A , 2.25
+ELSE
+	TIMES A , 4.00
+ENDIF
+
+IF TALENT:巨乳
+	TIMES A , 1.3
+ENDIF
+IF TALENT:Ｂ敏感
+	TIMES A , 1.4
+ELSEIF TALENT:Ｂ鈍感
+	TIMES A , 0.6
+ENDIF
+
+;貧乳
+IF TALENT:貧乳
+	TIMES SOURCE:痛み , 1.50
+ENDIF
+
+SOURCE:快Ｂ += A
+SOURCE:性行動 += 150
+SOURCE:痛み += 100
+SOURCE:中毒充足 += 100
+SOURCE:欲情追加 += 50
+SOURCE:露出 += 50
+SOURCE:屈従 += 50
+SOURCE:逸脱 += 50
+SOURCE:恭順追加 += 50
+
+;実行者が[淫具知識]を持っているなら効果増
+SIF TALENT:PLAYER:淫具知識
+	TIMES A , 1.20
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +1
+	EXP:レズ経験 += 1
+	EXP:PLAYER:レズ経験 += 1
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +1
+	EXP:ＢＬ経験 += 1
+	EXP:PLAYER:ＢＬ経験 += 1
+ENDIF
+
+IF TEQUIP:90
+	T += 1
+	CALL SYOKUSYU_MILK
+ENDIF
+
+RETURN 1

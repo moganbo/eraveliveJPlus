@@ -1,0 +1,121 @@
+﻿@COM70
+;罵倒
+
+PRINTL 罵倒
+STR:0 = 罵倒
+CALL TRAIN_MESSAGE_B
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+LOSEBASE:体力 += 5
+LOSEBASE:気力 += 150
+
+SOURCE:屈従 = 1200
+SOURCE:逸脱 = 300
+SOURCE:反感追加 = 100
+
+
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	SOURCE:達成感 = 150
+	SOURCE:痛み = 60
+	SOURCE:欲情追加 = 0
+	TIMES LOSEBASE:気力 , 2.00
+ELSEIF ABL:マゾっ気 == 1
+	SOURCE:達成感 = 300
+	SOURCE:痛み = 120
+	SOURCE:欲情追加 = 100
+	TIMES LOSEBASE:気力 , 1.50
+ELSEIF ABL:マゾっ気 == 2
+	SOURCE:達成感 = 600
+	SOURCE:痛み = 240
+	SOURCE:欲情追加 = 150
+	TIMES LOSEBASE:気力 , 1.00
+ELSEIF ABL:マゾっ気 == 3
+	SOURCE:達成感 = 900
+	SOURCE:痛み = 360
+	SOURCE:欲情追加 = 250
+	TIMES LOSEBASE:気力 , 0.75
+ELSEIF ABL:マゾっ気 == 4
+	SOURCE:達成感 = 1500
+	SOURCE:痛み = 480
+	SOURCE:欲情追加 = 500
+	TIMES LOSEBASE:気力 , 0.50
+ELSE
+	SOURCE:達成感 = 2200
+	SOURCE:痛み = 600
+	SOURCE:欲情追加 = 1000
+	TIMES LOSEBASE:気力 , 0.25
+ENDIF
+
+
+;TALENT:反抗的をみる
+IF TALENT:反抗的 == 1
+	TIMES SOURCE:屈従 , 1.50
+	TIMES SOURCE:反感追加 , 2.50
+ENDIF
+
+;TALENT:気丈をみる
+IF TALENT:気丈 == 1
+	TIMES SOURCE:屈従 , 2.50
+	TIMES SOURCE:反感追加 , 1.50
+ENDIF
+
+;TALENT:プライド高いをみる
+IF TALENT:プライド高い == 1
+	TIMES SOURCE:屈従 , 2.00
+	TIMES SOURCE:反感追加 , 2.00
+ENDIF
+
+;TALENT:生意気をみる
+IF TALENT:生意気 == 1
+	TIMES SOURCE:屈従 , 1.75
+	TIMES SOURCE:反感追加 , 1.75
+ENDIF
+
+;TALENT:プライド低いをみる
+IF TALENT:プライド低い == 1
+	TIMES SOURCE:屈従 , 0.75
+	TIMES SOURCE:反感追加 , 0.75
+ENDIF
+
+;TALENT:感情乏しいをみる
+IF TALENT:感情乏しい == 1
+	TIMES SOURCE:達成感 , 0.50
+	TIMES SOURCE:痛み , 0.50
+	TIMES SOURCE:屈従 , 0.50
+	TIMES SOURCE:逸脱 , 0.50
+	TIMES SOURCE:反感追加 , 0.50
+ENDIF
+
+
+;縄で緊縛中のとき効果上昇
+SIF TEQUIP:44
+	TIMES SOURCE:屈従 , 1.50
+;ボールギャグ装着中のとき効果上昇
+SIF TEQUIP:45
+	TIMES SOURCE:屈従 , 1.75
+
+
+IF ABL:マゾっ気 == 0 && TFLAG:21 == 0
+	;反発感情１～２に相当
+	I = RAND:2
+	IF I == 0
+		TFLAG:21 = 1
+	ELSE
+		TFLAG:21 = 2
+	ENDIF
+ELSE
+	TFLAG:100 = 2
+ENDIF
+
+;既成事実１に相当
+TFLAG:200 = 1
+
+IF EXP:強制自慰経験 < 20 && EXP:苦痛快楽経験 < 20 && ABL:マゾっ気 < 2
+	PRINTFORML そして%ABLNAME:0%が2になった
+	ABL:マゾっ気 = 3
+ENDIF
+
+RETURN 1

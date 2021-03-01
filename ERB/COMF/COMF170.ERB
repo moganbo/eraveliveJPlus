@@ -1,0 +1,336 @@
+﻿@COM_ABLE170
+;アナル卒塔婆実行判定
+RETURN 0
+
+;COM_ABLE共通判定
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;ウフフ中じゃないと無理
+SIF TFLAG:44 == 0
+	RETURN 0
+;調教者が映姫様じゃないとダメ
+SIF NO:PLAYER != 36
+	RETURN 0
+;ASSIの場合、従順3以上じゃないとできない。
+IF ASSIPLAY
+	SIF ABL:ASSI:親密 < 4
+	RETURN 0
+ENDIF
+;小柄体型なら従順が12以上かつマゾっ気が4以上、
+;かつＡ経験が20未満、Ａ拡張経験が5未満だと実行できない
+IF TALENT:小柄体型
+	SIF ABL:親密 <= 11 || ABL:マゾっ気 <= 3
+		RETURN 0
+	SIF EXP:Ａ経験 < 20 && EXP:Ａ拡張経験 < 20
+		RETURN 0
+ENDIF
+;調教対象が小人体型の場合は主人が禁断の知識持ちじゃないとダメ
+SIF TALENT:小人体型 && TALENT:MASTER:禁断の知識 == 0
+	RETURN 0
+;触手調教中はダメ
+SIF TEQUIP:90
+	RETURN 0
+;アナルバイブ使用中は不可
+SIF TEQUIP:13
+	RETURN 0
+;浣腸＋アナルプラグ使用中は不可
+SIF TEQUIP:46
+	RETURN 0
+;アナルビーズ使用中は不可
+SIF TEQUIP:19
+	RETURN 0
+;空気浣腸使用中は不可
+SIF TEQUIP:47
+	RETURN 0
+;バルーン使用中は不可
+SIF TEQUIP:48
+	RETURN 0
+;電極使用中は不可
+SIF TEQUIP:49
+	RETURN 0
+;巨峰挿入中は不可
+SIF TEQUIP:70
+	RETURN 0
+;氷柱挿入中は不可
+SIF TEQUIP:79
+	RETURN 0
+;シャワー中はダメ
+SIF TEQUIP:18
+	RETURN 0
+;クスコ着けているとダメ
+SIF TEQUIP:61
+	RETURN 0
+;お風呂場プレイ中はプレイマットが無いとダメ
+IF TEQUIP:58
+SIF ITEM:プレイマット == 0 && NOITEM == 0
+	RETURN 0
+ENDIF
+;新妻プレイ中はダメ
+SIF TEQUIP:59
+	RETURN 0
+RETURN 1
+
+@COM170
+;アナル卒塔婆
+;「貴女は少し反抗的すぎる」って言わせてみたかっただけでs
+PRINTL アナル卒塔婆
+STR:0 = アナル卒塔婆
+
+LOSEBASE:体力 += 400
+LOSEBASE:気力 += 600
+
+SOURCE:露出 = 1500
+SOURCE:屈従 = 1500
+SOURCE:逸脱 = 10000
+SOURCE:痛み = 100
+
+A = 700
+B = (ABL:PLAYER:欲望 * 2) + (ABL:PLAYER:奉仕精神 * 3) + (ABL:PLAYER:レズっ気 * 3) + (ABL:PLAYER:レズ中毒 * 2)
+C = 1 + RAND:10
+;MARK:反発刻印を見る
+IF MARK:反発感情 < 2
+	TIMES A, 1.00
+ELSEIF MARK:反発感情 == 2
+	TIMES A, 0.75
+ELSE
+	TIMES A, 0.50
+ENDIF
+
+;MARK:既成事実を見る
+IF MARK:既成事実 > 2
+	TIMES A, 1.25
+ELSEIF MARK:既成事実 == 2
+	TIMES A, 1.00
+ELSEIF MARK:既成事実 == 1
+	TIMES A, 0.75
+ELSE
+	TIMES A, 0.50
+ENDIF
+
+
+;MARK:苦痛刻印を見る
+IF MARK:苦痛依存 > 2
+	TIMES A, 1.20
+ELSEIF MARK:苦痛依存 == 2
+	TIMES A, 1.00
+ELSEIF MARK:苦痛依存 == 1
+	TIMES A, 0.80
+ELSE
+	TIMES A, 0.60
+ENDIF
+
+;ABL:マゾっ気をみる
+IF ABL:マゾっ気 == 0
+	TIMES A, 0.50
+	SOURCE:中毒充足 = 70
+ELSEIF ABL:マゾっ気 == 1
+	TIMES A, 0.70
+	SOURCE:中毒充足 = 150
+ELSEIF ABL:マゾっ気 == 2
+	TIMES A, 1.00
+	SOURCE:中毒充足 = 330
+ELSEIF ABL:マゾっ気 == 3
+	TIMES A, 1.40
+	SOURCE:中毒充足 = 650
+ELSEIF ABL:マゾっ気 == 4
+	TIMES A, 1.90
+	SOURCE:中毒充足 = 1400
+ELSE
+	TIMES A, 2.50
+	SOURCE:中毒充足 = 2500
+ENDIF
+
+SOURCE:痛み += 100 * (B+C)
+SOURCE:恭順追加 = 100 * (B+C)
+
+;ABL:Ａ感覚をみる
+IF ABL:Ａ感覚 == 0
+	SOURCE:快Ａ = 100
+	SOURCE:情愛 = 10
+	SOURCE:屈従 += 100
+ELSEIF ABL:Ａ感覚 == 1
+	SOURCE:快Ａ = 230
+	SOURCE:情愛 = 30
+	SOURCE:屈従 += 300
+ELSEIF ABL:Ａ感覚 == 2
+	SOURCE:快Ａ = 500
+	SOURCE:情愛 = 100
+	SOURCE:屈従 += 600
+ELSEIF ABL:Ａ感覚 == 3
+	SOURCE:快Ａ = 900
+	SOURCE:情愛 = 200
+	SOURCE:屈従 += 1000
+ELSEIF ABL:Ａ感覚 == 4
+	SOURCE:快Ａ = 1500
+	SOURCE:情愛 = 450
+	SOURCE:屈従 += 1500
+ELSE
+	SOURCE:快Ａ = 2100
+	SOURCE:情愛 = 750
+	SOURCE:屈従 += 2100
+ENDIF
+
+;EXP:Ａ経験をみる
+IF EXP:Ａ経験 < EXPLV:1
+	TIMES SOURCE:快Ａ , 0.10
+	SOURCE:痛み += 25000
+ELSEIF EXP:Ａ経験 < EXPLV:2
+	TIMES SOURCE:快Ａ , 0.30
+	SOURCE:痛み += 16000
+ELSEIF EXP:Ａ経験 < EXPLV:3
+	TIMES SOURCE:快Ａ , 0.50
+	SOURCE:痛み += 9000
+ELSEIF EXP:Ａ経験 < EXPLV:4
+	TIMES SOURCE:快Ａ , 1.00
+	SOURCE:痛み += 5000
+ELSEIF EXP:Ａ経験 < EXPLV:5
+	TIMES SOURCE:快Ａ , 1.40
+	SOURCE:痛み += 2700
+ELSE
+	TIMES SOURCE:快Ａ , 1.60
+	SOURCE:痛み += 1500
+ENDIF
+
+;PALAM:潤滑をみる
+IF PALAM:潤滑 < PALAMLV:1
+	TIMES SOURCE:快Ａ , 0.40
+	SOURCE:痛み += 12000
+ELSEIF PALAM:潤滑 < PALAMLV:2
+	TIMES SOURCE:快Ａ , 0.80
+	SOURCE:痛み += 4000
+ELSEIF PALAM:潤滑 < PALAMLV:3
+	TIMES SOURCE:快Ａ , 1.00
+	SOURCE:痛み += 1600
+ELSEIF PALAM:潤滑 < PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.40
+	SOURCE:痛み += 500
+ELSEIF PALAM:潤滑 >= PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.80
+	SOURCE:痛み += 120
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES SOURCE:快Ａ , 0.60
+	TIMES SOURCE:屈従 , 0.60
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES SOURCE:快Ａ , 0.80
+	TIMES SOURCE:屈従 , 0.80
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES SOURCE:快Ａ , 1.00
+	TIMES SOURCE:屈従 , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.20
+	TIMES SOURCE:屈従 , 1.20
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES SOURCE:快Ａ , 1.40
+	TIMES SOURCE:屈従 , 1.40
+ENDIF
+
+;プライド高い
+SIF TALENT:プライド高い
+	TIMES A, 0.90
+;プライド低い
+SIF TALENT:プライド低い
+	TIMES A, 1.50
+;自制心
+SIF TALENT:自制心
+	TIMES A, 0.30
+;抵抗
+SIF TALENT:抵抗
+	TIMES A, 0.80
+;弱味
+SIF TALENT:弱味
+	TIMES A, 2.50
+;中毒しやすい
+SIF TALENT:中毒しやすい
+	TIMES A, 1.50
+;倒錯的
+SIF TALENT:倒錯的
+	TIMES A, 1.50
+
+;小柄体形
+SIF TALENT:小柄体型
+	TIMES SOURCE:痛み , 2.00
+
+;Ａ敏感、鈍感をみる
+;快Ａ自体のチェックは後でまとめてやる
+IF TALENT:Ａ鈍感
+	TIMES SOURCE:痛み , 1.50
+	TIMES SOURCE:屈従 , 1.50
+	TIMES SOURCE:逸脱 , 1.50
+ELSEIF TALENT:Ａ敏感
+	TIMES SOURCE:痛み , 0.60
+	TIMES SOURCE:屈従 , 0.60
+	TIMES SOURCE:逸脱 , 0.60
+ENDIF
+
+;処女で貞操観念
+IF EXP:Ｖ経験 == 0 && TALENT:貞操観念
+	SOURCE:屈従 /= 3
+ENDIF
+
+
+A *= B
+A /= C
+
+;お嬢様、てゐ、天子は反発
+SIF NO:TARGET == 10 || NO:TARGET == 27 || NO:TARGET == 63
+	SOURCE:反感追加 += 30000
+;ゆゆ様、ゆかりん、萃香、小町、阿求は反発低下
+SIF NO:TARGET == 20 || NO:TARGET == 22 || NO:TARGET == 23 || NO:TARGET == 35 || NO:TARGET == 48
+	A *= 3
+
+PALAM:反感 -= A
+PALAM:不快 -= A
+PALAM:抑鬱 -= A
+
+SIF PALAM:反感 <= 0
+	PALAM:反感 = 0
+SIF PALAM:不快 <= 0
+	PALAM:不快 = 0
+SIF PALAM:抑鬱 <= 0
+	PALAM:抑鬱 = 0
+
+CALL TRAIN_MESSAGE_B
+
+EXP:Ａ経験 += 5
+PRINTL Ａ経験＋５
+EXP:Ａ拡張経験 += 2
+PRINTL Ａ拡張経験＋２
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +2
+	EXP:レズ経験 += 2
+ELSEIF TALENT:オトコ == 1 && TALENT:PLAYER:オトコ == 1
+	PRINTS EXPNAME:41
+	PRINTL +5
+	EXP:ＢＬ経験 += 5
+ENDIF
+
+IF ASSIPLAY == 0
+	IF ABL:Ａ感覚 >= 3
+		TFLAG:30 += 2
+	ELSE
+		TFLAG:30 += 1
+	ENDIF
+ENDIF
+
+RETURN 1
+
+@TRAIN_MESSAGE_COM170
+PRINTFORML %CALLNAME:PLAYER%は右手に持った卒塔婆を%CALLNAME:TARGET%のアナルに押し込んだ
+PRINTFORMW そして説教しつつ、左手に持った悔悟の棒でお尻を叩き始めた
+WAIT
+
+PRINTFORMW 説教中に{B+C}回叩かれ、%CALLNAME:TARGET%のお尻は真っ赤になっている
+PRINTL  
+IF A > 0
+	PRINTFORML %CALLNAME:TARGET%の%PALAMNAME:11%が下がった
+	PRINTFORML %CALLNAME:TARGET%の%PALAMNAME:12%が下がった
+	PRINTFORML %CALLNAME:TARGET%の%PALAMNAME:13%が下がった
+	PRINTL  
+ENDIF
+

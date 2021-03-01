@@ -1,0 +1,214 @@
+﻿@COM_ABLE152
+;半霊を犯す
+;やるならイタコさんのＮＨＫ犯すとかになるのかなあ
+;でも需要なさそうなので実行不可
+RETURN 0
+
+CALL COM_ABLE_COMMON, SELECTCOM
+SIF RESULT == 0
+	RETURN 0
+;ウフフ中じゃないと無理
+SIF TFLAG:44 == 0
+	RETURN 0
+;調教対象が妖夢でないとダメ
+SIF NO:TARGET != 19
+	RETURN 0
+;調教者がオトコ、半人半妖、ふたなり、もしくはペニスバンドがないとダメ
+SIF TALENT:PLAYER:半人半妖 == 0 && TALENT:PLAYER:ふたなり == 0 && TALENT:PLAYER:オトコ == 0 && ITEM:PBAND == 0
+	RETURN 0
+RETURN 1
+
+@COM152
+;半霊を犯す
+;ベースは正常位
+;処女のまま快Ｖ稼ぐとか反則だろ常考…
+
+PRINTL 半霊を犯す
+STR:0 = 半霊を犯す
+CALL TRAIN_MESSAGE_B
+
+;-------------------------------------------------
+;射精ゲージチェック
+;-------------------------------------------------
+SIF TALENT:PLAYER:ふたなり || TALENT:PLAYER:オトコ
+	BASE:PLAYER:射精 += CALC_EJAC(SELECTCOM, PLAYER)
+
+;-------------------------------------------------
+;ソースの計算
+;-------------------------------------------------
+LOSEBASE:体力 += 0
+LOSEBASE:気力 += 200
+
+SOURCE:露出 = 800
+
+;ABL:Ｖ感覚をみる
+IF ABL:Ｖ感覚 == 0
+	SOURCE:快Ｖ = 800
+	SOURCE:情愛 = 150
+ELSEIF ABL:Ｖ感覚 == 1
+	SOURCE:快Ｖ = 1000
+	SOURCE:情愛 = 250
+ELSEIF ABL:Ｖ感覚 == 2
+	SOURCE:快Ｖ = 1200
+	SOURCE:情愛 = 350
+ELSEIF ABL:Ｖ感覚 == 3
+	SOURCE:快Ｖ = 1400
+	SOURCE:情愛 = 500
+ELSEIF ABL:Ｖ感覚 == 4
+	SOURCE:快Ｖ = 1600
+	SOURCE:情愛 = 700
+ELSE
+	SOURCE:快Ｖ = 1300 + (ABL:Ｖ感覚 * 100)
+	SOURCE:情愛 = 250 + (ABL:Ｖ感覚 * 150)
+ENDIF
+
+;EXP:Ｖ経験をみる
+IF EXP:Ｖ経験 < EXPLV:1
+	TIMES SOURCE:快Ｖ , 0.80
+
+ELSEIF EXP:Ｖ経験 < EXPLV:2
+	TIMES SOURCE:快Ｖ , 0.90
+ELSEIF EXP:Ｖ経験 < EXPLV:3
+	TIMES SOURCE:快Ｖ , 1.00
+ELSEIF EXP:Ｖ経験 < EXPLV:4
+	TIMES SOURCE:快Ｖ , 1.10
+ELSEIF EXP:Ｖ経験 < EXPLV:5
+	TIMES SOURCE:快Ｖ , 1.20
+ELSE
+	TIMES SOURCE:快Ｖ , 1.30
+ENDIF
+
+
+;調教者がふたなり
+IF ASSIPLAY
+	SIF TALENT:ASSI:ふたなり
+		TIMES SOURCE:快Ｖ , 2.50
+ENDIF
+
+;PALAM:欲情をみる
+IF PALAM:欲情 < PALAMLV:1
+	TIMES SOURCE:快Ｖ , 0.60
+	TIMES SOURCE:情愛 , 0.30
+ELSEIF PALAM:欲情 < PALAMLV:2
+	TIMES SOURCE:快Ｖ , 0.80
+	TIMES SOURCE:情愛 , 0.60
+ELSEIF PALAM:欲情 < PALAMLV:3
+	TIMES SOURCE:快Ｖ , 1.00
+	TIMES SOURCE:情愛 , 1.00
+ELSEIF PALAM:欲情 < PALAMLV:4
+	TIMES SOURCE:快Ｖ , 1.20
+	TIMES SOURCE:情愛 , 1.50
+ELSEIF PALAM:欲情 >= PALAMLV:4
+	TIMES SOURCE:快Ｖ , 1.50
+	TIMES SOURCE:情愛 , 1.80
+ENDIF
+
+;ABL:従順をみる
+IF ABL:親密 == 0
+	TIMES SOURCE:快Ｖ , 0.50
+	TIMES SOURCE:情愛 , 0.60
+	TIMES SOURCE:反感追加 , 2.00
+ELSEIF ABL:親密 == 1
+	TIMES SOURCE:快Ｖ , 0.80
+	TIMES SOURCE:情愛 , 0.80
+	TIMES SOURCE:反感追加 , 1.50
+ELSEIF ABL:親密 == 2
+	TIMES SOURCE:快Ｖ , 1.00
+	TIMES SOURCE:情愛 , 1.00
+	TIMES SOURCE:反感追加 , 1.00
+ELSEIF ABL:親密 == 3
+	TIMES SOURCE:快Ｖ , 1.30
+	TIMES SOURCE:情愛 , 1.20
+	TIMES SOURCE:反感追加 , 0.80
+ELSEIF ABL:親密 == 4
+	TIMES SOURCE:快Ｖ , 1.60
+	TIMES SOURCE:情愛 , 1.40
+	TIMES SOURCE:反感追加 , 0.60
+ELSE
+	SOURCE:快Ｖ = SOURCE:快Ｖ * (ABL:親密 * 20 + 100) / 100
+	SOURCE:情愛 = SOURCE:情愛 * (ABL:親密 * 10 + 110) / 100
+	TIMES SOURCE:反感追加 , 0.30
+ENDIF
+
+;-------------------------------------------------
+;射精チェック
+;-------------------------------------------------
+CALL SAMEN_CHECK
+;;オーバーフロー対策に、値が大きすぎる場合と、負の場合は調整を加える
+;IF BASE:PLAYER:射精 > 100000000 || BASE:PLAYER:射精 < 0
+;	BASE:PLAYER:射精 = 100000000
+;ENDIF
+;
+;S = BASE:PLAYER:射精
+;EJAC = MAXBASE:PLAYER:射精
+;
+;IF  S > EJAC * 2
+;	E = 2
+;ELSEIF S > EJAC
+;	E = 1
+;ELSE
+;	E = 0
+;ENDIF
+
+IF E >= 1
+	SIF ABL:親密 >= 3 && ABL:欲望 >= 3 && FLAG:6
+		PRINTFORML %CALLNAME:TARGET%の半霊は%CALLNAME:PLAYER%に絡みついてきた…
+
+;射精先タイプの設定(処理が一緒なのでA中出しとして扱う)
+	TFLAG:703 = 2
+	;射精先選択の可・不可
+	TFLAG:704 = 0
+	;汎用的な処理はこの関数で行う
+	;（射精ゲージの再計算や射精経験の上昇と共通部分の表示）
+	CALL SAMEN_SHOOT
+ENDIF
+
+;;大量射精
+;IF E == 2
+;	EXP:PLAYER:射精経験 += 2
+;	EXP:精液経験 += 1
+;	PRINTL 大量射精
+;	PRINTL 精液経験＋１
+;	;Ｐに精液汚れ
+;	STAIN:PLAYER:ペニス |= 4
+;
+;	BASE:PLAYER:射精 -= EJAC*2
+;	SIF BASE:PLAYER:射精 >= EJAC
+;		BASE:PLAYER:射精 = EJAC-1
+;
+;	;セックスで射精フラグ
+;	TFLAG:2 = 2
+;;通常の射精
+;ELSEIF E == 1
+;	EXP:PLAYER:射精経験 += 1
+;	;Ｐに精液汚れ
+;	PRINTL 射精
+;	STAIN:PLAYER:ペニス |= 4
+;
+;	BASE:PLAYER:射精 -= EJAC
+;	SIF BASE:PLAYER:射精 >= EJAC
+;		BASE:PLAYER:射精 = EJAC-1
+;
+;	;セックスで射精フラグ
+;	TFLAG:2 = 1
+;ENDIF
+
+IF TALENT:オトコ == 0 && TALENT:PLAYER:オトコ == 0
+	PRINTS EXPNAME:40
+	PRINTL +4
+	EXP:レズ経験 += 4
+ENDIF
+
+IF ASSIPLAY == 0
+	IF ABL:Ｖ感覚 >= 3
+		TFLAG:30 += 2
+	ELSE
+		TFLAG:30 += 1
+	ENDIF
+ENDIF
+
+RETURN 1
+
+;半霊を犯す
+@TRAIN_MESSAGE_COM152
+
