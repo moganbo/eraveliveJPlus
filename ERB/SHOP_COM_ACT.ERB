@@ -231,14 +231,14 @@ B:1 = 1
 B:2 = 1
 ;[3] 自給自足
 ;ゆかり様には親密30以上ないと自給自足を指示できない
-SIF TALENT:A:eraVoiceroidJも支配する程度の能力 == 0 || ABL:A:親密 >= 30 || A == MASTER
+SIF TALENT:A:eraveliveJも支配する程度の能力 == 0 || ABL:A:親密 >= 30 || A == MASTER
 	B:3 = 1
 ;[4] 連携を確認する
 SIF A != MASTER && (ABL:A:親密 >= 5 || CFLAG:A:2 >= 500 || TALENT:A:恋人)
 	B:4 = 1
 ;[5] 家事
 ;ゆかり様には親密20以上ないと指示できない
-SIF A != MASTER && (TALENT:A:eraVoiceroidJも支配する程度の能力 == 0 && (ABL:A:親密 >= 5 || CFLAG:A:2 >= 500 || TALENT:A:恋人) || ABL:A:親密 >= 20)
+SIF A != MASTER && (TALENT:A:eraveliveJも支配する程度の能力 == 0 && (ABL:A:親密 >= 5 || CFLAG:A:2 >= 500 || TALENT:A:恋人) || ABL:A:親密 >= 20)
 	B:5 = 1
 ;[6] モンスター退治
 SIF A != MASTER && A != TARGET && A != ASSI && BASE:A:耐力 >= 500 && (ABL:A:親密 >= 5 || CFLAG:A:2 >= 500 || TALENT:A:恋人)

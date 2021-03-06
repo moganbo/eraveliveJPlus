@@ -119,7 +119,7 @@ ON	正規表現		TALENT:([A-Z]+:|)180([^0-9]|$)	TALENT:$1服従$2
 ON	正規表現		TALENT:([A-Z]+:|)181([^0-9]|$)	TALENT:$1烙印$2		
 ON	正規表現		TALENT:([A-Z]+:|)182([^0-9]|$)	TALENT:$1隷属$2		
 ON	正規表現		TALENT:([A-Z]+:|)200([^0-9]|$)	TALENT:$1女性を虜にする程度の能力$2		
-ON	正規表現		TALENT:([A-Z]+:|)201([^0-9]|$)	TALENT:$1eraVoiceroidJも支配する程度の能力$2		
+ON	正規表現		TALENT:([A-Z]+:|)201([^0-9]|$)	TALENT:$1eraveliveJも支配する程度の能力$2		
 ON	正規表現		TALENT:([A-Z]+:|)202([^0-9]|$)	TALENT:$1脱衣制限解除$2		
 ON	正規表現		TALENT:([A-Z]+:|)203([^0-9]|$)	TALENT:$1恋人ボーナス強化$2		
 ON	正規表現		TALENT:([A-Z]+:|)204([^0-9]|$)	TALENT:$1恋慕ボーナス強化$2		

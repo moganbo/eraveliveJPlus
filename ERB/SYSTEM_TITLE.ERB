@@ -13,11 +13,11 @@ DO
 	FOR LOCAL:1, 0, 126
 		CLEARLINE LINECOUNT - LOCAL:2
 		
-		GETFONT
-		;タイトル画像表示
-		FOR LOCAL:0, 0, 29
-			HTML_PRINT "<p align='center'><img src='rev" + TOSTR(LOCAL:1, "000") + TOSTR(LOCAL:0, "00") + "'></p>"
-		NEXT
+		;GETFONT
+		;;タイトル画像表示
+		;FOR LOCAL:0, 0, 29
+		;	HTML_PRINT "<p align='center'><img src='rev" + TOSTR(LOCAL:1, "000") + TOSTR(LOCAL:0, "00") + "'></p>"
+		;NEXT
 		
 		SETFONT RESULTS:0
 		

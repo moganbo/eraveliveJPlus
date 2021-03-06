@@ -737,8 +737,8 @@ REPEAT 5
 	;調教者のTALENT:謎の魅力をみる
 	SIF TALENT:PLAYER:謎の魅力
 		TIMES SOURCE:(LOCAL:COUNT) , 1.20
-	;調教者のTALENT:eraVoiceroidJを支配する程度の能力をみる
-	SIF TALENT:PLAYER:eraVoiceroidJも支配する程度の能力
+	;調教者のTALENT:eraveliveJを支配する程度の能力をみる
+	SIF TALENT:PLAYER:eraveliveJも支配する程度の能力
 		TIMES SOURCE:(LOCAL:COUNT) , 2.00
 
 	;調教者のABL:技巧
@@ -788,7 +788,7 @@ IF TALENT:PLAYER:魅力
 	TFLAG:37 += 1
 ENDIF
 ;調教者のTALENT:eratohoを支配する程度の能力をみる
-IF TALENT:PLAYER:eraVoiceroidJも支配する程度の能力
+IF TALENT:PLAYER:eraveliveJも支配する程度の能力
 	TIMES SOURCE:達成感 , 2.00
 ENDIF
 
@@ -1227,19 +1227,19 @@ ENDIF
 ;でもゆかり様だけはなかなか軽減しない
 IF EXP:異常経験 <= 0
 	TIMES UP:抑鬱 , 1.30
-ELSEIF EXP:異常経験 < (10 + TALENT:eraVoiceroidJも支配する程度の能力 * 255)
+ELSEIF EXP:異常経験 < (10 + TALENT:eraveliveJも支配する程度の能力 * 255)
 	TIMES UP:抑鬱 , 1.10
-ELSEIF EXP:異常経験 < (50 + TALENT:eraVoiceroidJも支配する程度の能力 * 500)
+ELSEIF EXP:異常経験 < (50 + TALENT:eraveliveJも支配する程度の能力 * 500)
 	TIMES UP:抑鬱 , 0.90
-ELSEIF EXP:異常経験 < (100 + TALENT:eraVoiceroidJも支配する程度の能力 * 1000)
+ELSEIF EXP:異常経験 < (100 + TALENT:eraveliveJも支配する程度の能力 * 1000)
 	TIMES UP:抑鬱 , 0.70
-ELSEIF EXP:異常経験 < (200 + TALENT:eraVoiceroidJも支配する程度の能力 * 2000)
+ELSEIF EXP:異常経験 < (200 + TALENT:eraveliveJも支配する程度の能力 * 2000)
 	TIMES UP:抑鬱 , 0.40
-ELSEIF EXP:異常経験 < (400 + TALENT:eraVoiceroidJも支配する程度の能力 * 4000)
+ELSEIF EXP:異常経験 < (400 + TALENT:eraveliveJも支配する程度の能力 * 4000)
 	TIMES UP:抑鬱 , 0.10
-ELSEIF EXP:異常経験 < (700 + TALENT:eraVoiceroidJも支配する程度の能力 * 7000)
+ELSEIF EXP:異常経験 < (700 + TALENT:eraveliveJも支配する程度の能力 * 7000)
 	TIMES UP:抑鬱 , 0.01
-ELSEIF EXP:異常経験 < (1500 + TALENT:eraVoiceroidJも支配する程度の能力 * 15000)
+ELSEIF EXP:異常経験 < (1500 + TALENT:eraveliveJも支配する程度の能力 * 15000)
 	TIMES UP:抑鬱 , 0.001
 ELSE
 	TIMES UP:抑鬱 , 0.0001
