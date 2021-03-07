@@ -88,18 +88,10 @@ IF L == 0
 	STR:202 = あなた
 	STR:203 = あなた
 	RETURN 1
-ELSEIF L >= 1 && L <= 49
-	STR:202 = VOICEROID
-	STR:203 = VOICEROID
+ELSE
+	STR:202 = 人間
+	STR:203 = 人間
 	RETURN 20
-ELSEIF L >= 50 && L <= 59
-	STR:202 = CeVIO
-	STR:203 = CeVIO
-	RETURN 21
-ELSEIF L >= 80 && L <= 89
-	STR:202 = AITalk
-	STR:203 = AITalk
-	RETURN 22
 ENDIF
 
 ;ここまで来たらヒットなし
